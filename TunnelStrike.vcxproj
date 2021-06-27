@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Denis Oliver Kropp\source\repos;C:\Users\Denis Oliver Kropp\source\experimental;C:\Users\Denis Oliver Kropp\source\repos\deniskropp\SFML\include;C:\Users\Denis Oliver Kropp\source\repos\polymer\lib-polymer;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Denis Oliver Kropp\source\repos\deniskropp\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
     </ClCompile>
