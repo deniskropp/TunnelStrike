@@ -1,4 +1,5 @@
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #include "utils/parameters.hpp"
@@ -11,7 +12,7 @@
 
 #include "World.hpp"
 
-#include <parallel_f/log.hpp>
+//#include <parallel_f/log.hpp>
 
 
 
@@ -72,19 +73,19 @@ namespace TunnelStrike {
 	private:
 		void ProcessEvents()
 		{
-			LOG_DEBUG("Main::ProcessEvents()\n");
+			//LOG_DEBUG("Main::ProcessEvents()\n");
 
 			sf::Event event;
 
 			// handle events
 			while (window.pollEvent(event)) {
 				if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-					LOG_DEBUG("Main::ProcessEvents() -> CLOSE\n");
+					//LOG_DEBUG("Main::ProcessEvents() -> CLOSE\n");
 
 					window.close();
 				}
 				else if (event.type == sf::Event::Resized) {
-					LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
+					//LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
 
 					window.setView(sf::View(sf::FloatRect(0, 0, (float)event.size.width, (float)event.size.height)));
 
@@ -93,7 +94,7 @@ namespace TunnelStrike {
 					Camera3d::instance().reload_frustrum();
 				}
 				else if (event.type == sf::Event::MouseButtonPressed || sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-					LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
+					//LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
 
 					Shoot();
 				}
