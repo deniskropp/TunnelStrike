@@ -42,9 +42,6 @@
     <ClCompile Include="utils\looptimer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils\mouse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="utils\parameters.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -81,9 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utils\looptimer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils\mouse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utils\parameters.hpp">

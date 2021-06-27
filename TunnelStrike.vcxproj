@@ -159,7 +159,6 @@
     <ClCompile Include="Target.cpp" />
     <ClCompile Include="Targets.cpp" />
     <ClCompile Include="utils\looptimer.cpp" />
-    <ClCompile Include="utils\mouse.cpp" />
     <ClCompile Include="utils\parameters.cpp" />
     <ClCompile Include="utils\tools.cpp" />
     <ClCompile Include="Walls.cpp" />
@@ -182,7 +181,6 @@
     <ClInclude Include="Target.hpp" />
     <ClInclude Include="Targets.hpp" />
     <ClInclude Include="utils\looptimer.hpp" />
-    <ClInclude Include="utils\mouse.hpp" />
     <ClInclude Include="utils\parameters.hpp" />
     <ClInclude Include="utils\tools.hpp" />
     <ClInclude Include="Walls.hpp" />

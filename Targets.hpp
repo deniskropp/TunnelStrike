@@ -12,6 +12,7 @@ namespace TunnelStrike {
 
 	class Targets : public Entity
 	{
+		friend class Main;
 		friend class Shots;
 
 	private:
@@ -21,7 +22,7 @@ namespace TunnelStrike {
 	public:
 		Targets(World& world);
 
-		virtual void Tick();
+		virtual void Tick(sf::Time delta);
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 	};

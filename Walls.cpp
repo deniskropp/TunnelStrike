@@ -9,9 +9,10 @@ namespace TunnelStrike {
 		Entity(world),
 		maxz(0.0f)
 	{
+		shader.loadFromFile("wall.vert", "wall.frag");
 	}
 
-	void Walls::Tick()
+	void Walls::Tick(sf::Time delta)
 	{
 		float z = (float)Camera3d::instance().center().get_z();
 
@@ -59,9 +60,11 @@ namespace TunnelStrike {
 
 	void Walls::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
+		states.shader = &shader;
+
 		// draw walls
 		for (auto& w : q)
-			target.draw(w);
+			target.draw(w, states);
 	}
 
 

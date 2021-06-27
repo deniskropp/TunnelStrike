@@ -6,7 +6,7 @@
 
 namespace TunnelStrike {
 
-#define PROJECTION_FACTOR    1024.0f
+#define PROJECTION_FACTOR    2048.0f
 #define PROJECTION_MAX_DEPTH 800
 
 	class Plane3d {

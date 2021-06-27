@@ -11,7 +11,7 @@
 namespace TunnelStrike {
 
 	class Vector3d {
-	private:
+	public:
 		double x, y, z;
 		sf::Color color;
 

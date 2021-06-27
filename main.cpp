@@ -1,9 +1,6 @@
 #include <memory>
 #include <vector>
 
-#include <Instance.hxx>
-
-#include "utils/mouse.hpp"
 #include "utils/parameters.hpp"
 #include "geometry/camera3d.hpp"
 #include "geometry/solid3d.hpp"
@@ -21,34 +18,14 @@
 namespace TunnelStrike {
 
 
-	class TestObject : public Instance<TestObject>
-	{
-	public:
-		TestObject()
-		{
-			LOG_INFO("TestObject::TestObject()\n");
-		}
-
-		~TestObject()
-		{
-			LOG_INFO("TestObject::~TestObject()\n");
-		}
-
-		void test()
-		{
-			LOG_INFO("TestObject::test()\n");
-		}
-	};
-
-
-
-
 	class Main
 	{
 	private:
 		sf::RenderWindow& window;
-		sf::Vector2i tc;
 		World world;
+
+		sf::Vector2i tc;
+		sf::Vector2i cursor;
 
 	public:
 		Main(sf::RenderWindow& window)
@@ -57,16 +34,8 @@ namespace TunnelStrike {
 		{
 			srand((unsigned int)time(NULL));
 
-
-			TestObject::Handle obj(new TestObject());
-
-			obj->test();
-
-			TestObject::Handle obj2(obj);
-
-			TestObject::Handle obj3;
-
-			obj3 = obj2;
+			cursor.x = sf::Mouse::getPosition(window).x;
+			cursor.y = sf::Mouse::getPosition(window).y;
 		}
 
 		void run()
@@ -74,19 +43,29 @@ namespace TunnelStrike {
 			sf::Clock loop_timer;
 
 			while (window.isOpen()) {
+				sf::Time delta = loop_timer.restart();
+
 				ProcessEvents();
 
 				HandleCamera();
 
-				world.Tick();
+				float d = delta.asSeconds();
+
+				while (d > 0.005f) {
+					if (d > 0.005f)
+						world.Tick(sf::seconds(0.005f));
+					else
+						world.Tick(sf::seconds(d));
+
+					d -= 0.005f;
+				}
 
 				RenderFrame();
 
 				// other
-				Parameters::print_mean_CPU_usage(std::cout, loop_timer.getElapsedTime().asMilliseconds());
+				Parameters::print_mean_CPU_usage(std::cout, delta.asMilliseconds());
 
-				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)loop_timer.getElapsedTime().asMilliseconds())));
-				loop_timer.restart();
+				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)delta.asMilliseconds())));
 			}
 		}
 
@@ -116,17 +95,42 @@ namespace TunnelStrike {
 				else if (event.type == sf::Event::MouseButtonPressed || sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
 					LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
 
-					Vector3d pos(0, 0, Camera3d::instance().center().get_z());
-					Vector3d dir(0, 0, 50);
-
-					dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
-					dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
-
-					world.shots->shots.push_back(std::make_shared<Shot>(pos, dir));
-
-					Sfx::instance().PlayShot();
+					Shoot();
 				}
 			}
+		}
+
+		void Shoot()
+		{
+			Vector3d pos(0, 0, Camera3d::instance().center().get_z());
+			Vector3d dir(0, 0, 50);
+
+			dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
+			dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
+
+			world.shots->shots.push_back(std::make_shared<Shot>(pos, dir));
+
+			Sfx::instance().PlayShot();
+		}
+
+		bool CheckShoot()
+		{
+			Vector3d pos(0, 0, Camera3d::instance().center().get_z());
+			Vector3d dir(0, 0, 1);
+
+			dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
+			dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
+
+			for (float a = 0.0f; a < 200.0f; a += 1.0f) {
+				Vector3d current = pos + dir * a;
+
+				for (auto t : world.targets->targets) {
+					if (current.distance_to(t->GetCenter()) < 3.0f)
+						return true;
+				}
+			}
+
+			return false;
 		}
 
 		void HandleCamera()
@@ -145,8 +149,11 @@ namespace TunnelStrike {
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 				Camera3d::instance().move(Camera3d::DIRECTION::DOWN);
 
-			int dx = Mouse::get_move_x(window);
-			int dy = Mouse::get_move_y(window);
+			int dx = (sf::Mouse::getPosition(window).x - cursor.x);
+			int dy = (sf::Mouse::getPosition(window).y - cursor.y);
+
+			cursor.x += dx;
+			cursor.y += dy;
 
 			if (dx > 0) {
 				if (tc.x + dx > 70)
@@ -166,6 +173,37 @@ namespace TunnelStrike {
 					dy = -70 - tc.y;
 			}
 
+
+
+			static int sx = 1;
+			static int sy = 1;
+
+			if (::rand() % 50 == 0)
+				sx = -sx;
+
+			if (::rand() % 50 == 0)
+				sy = -sy;
+
+			if (tc.x > 15) {
+				sx = -1;
+			}
+
+			if (tc.x < -15) {
+				sx = 1;
+			}
+
+			if (tc.y > 15) {
+				sy = -1;
+			}
+
+			if (tc.y < -15) {
+				sy = 1;
+			}
+
+			dx += sx;
+			dy += sy;
+
+
 			if (dx || dy) {
 				tc.x += dx;
 				tc.y += dy;
@@ -175,17 +213,61 @@ namespace TunnelStrike {
 			}
 
 			Camera3d::instance().translate(Vector3d(0, 0, 1.0));
+
+
+			static int sh = 0;
+
+			if (!sh) {
+				if (CheckShoot()) {
+					sh = 40;
+
+					Shoot();
+				}
+			}
+			else
+				sh--;
 		}
 
 		void RenderFrame()
 		{
 			window.clear();
 
-			window.draw(world, sf::RenderStates::Default);
+			window.draw(world);
 
-			// flip display
+			updateStats();
+			window.draw(stats);
+
 			window.display();
 		}
+
+	private:
+		class Stats : public sf::Text
+		{
+		private:
+			sf::Font font;
+
+		public:
+			Stats()
+			{
+				font.loadFromFile("calibri.ttf");
+
+				setFont(font);
+				setCharacterSize(48);
+				setFillColor(sf::Color::White);
+				setPosition(20.0f, 20.0f);
+			}
+		};
+
+		void updateStats()
+		{
+			std::stringstream ss;
+
+			ss << "Kills: " << world.get_kills();
+
+			stats.setString(ss.str());
+		}
+
+		Stats stats;
 	};
 
 

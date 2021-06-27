@@ -24,7 +24,7 @@ namespace TunnelStrike {
 		v.append(sf::Vertex(sf::Vector2f(Parameters::window_width / 2.0f + 5.0f, Parameters::window_height / 2.0f), sf::Color(255, 255, 255)));
 	}
 
-	void Crosshair::Tick()
+	void Crosshair::Tick(sf::Time delta)
 	{
 	}
 

@@ -11,7 +11,7 @@
 namespace TunnelStrike {
 
 
-	void Shots::Tick()
+	void Shots::Tick(sf::Time delta)
 	{
 		/* Build up list of still existing shots */
 		std::vector<std::shared_ptr<Shot>> shots_new;
@@ -23,6 +23,7 @@ namespace TunnelStrike {
 			if (target) {
 				Sfx::instance().PlayHit();
 				world.targets->targets.erase(target);
+				world.killed();
 				continue;
 			}
 

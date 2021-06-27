@@ -41,7 +41,7 @@ namespace TunnelStrike {
 		Vector3d current = position(clock.getElapsedTime());
 
 		for (auto t : targets) {
-			if (current.distance_to(t->GetCenter()) < 5.0f)
+			if (current.distance_to(t->GetCenter()) < 3.0f)
 				return t;
 		}
 

@@ -13,7 +13,7 @@ namespace TunnelStrike {
 	{
 	}
 
-	void Targets::Tick()
+	void Targets::Tick(sf::Time delta)
 	{
 		/* Build up list of still existing targets */
 		std::set<std::shared_ptr<Target>> targets_new;
@@ -25,6 +25,9 @@ namespace TunnelStrike {
 
 			/* keep target */
 			targets_new.insert(t);
+
+
+			t->Act(delta);
 		}
 
 		targets = targets_new;
@@ -39,7 +42,8 @@ namespace TunnelStrike {
 
 			int v = ::rand() % 256;
 
-			sf::Color color(v, 255 - v, ::rand() % 256);
+			//sf::Color color(v, 255 - v, ::rand() % 256);
+			sf::Color color(255, 255, 255);
 
 			auto target = std::make_shared<Target>(pos, 3.0f, color);
 

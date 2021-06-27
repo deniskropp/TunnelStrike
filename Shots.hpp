@@ -24,7 +24,7 @@ namespace TunnelStrike {
 		{
 		}
 
-		virtual void Tick();
+		virtual void Tick(sf::Time delta);
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 	};

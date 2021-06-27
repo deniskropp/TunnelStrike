@@ -6,8 +6,8 @@
 
 namespace TunnelStrike {
 
-#define INITIAL_WINDOW_WIDTH  1200
-#define INITIAL_WINDOW_HEIGHT 800
+#define INITIAL_WINDOW_WIDTH  1000
+#define INITIAL_WINDOW_HEIGHT 700
 
 #define FPS 60
 #define MAX_MAIN_LOOP_DURATION (1000.0 / FPS)
