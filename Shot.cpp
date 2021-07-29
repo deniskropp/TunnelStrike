@@ -36,7 +36,7 @@ namespace TunnelStrike {
 		return false;
 	}
 
-	std::shared_ptr<Target> Shot::hitTarget(std::set<std::shared_ptr<Target>> targets) const
+	std::shared_ptr<Target> Shot::hitTarget(std::list<std::shared_ptr<Target>> targets) const
 	{
 		Vector3d current = position(clock.getElapsedTime());
 

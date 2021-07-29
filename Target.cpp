@@ -17,15 +17,20 @@ void Target::generate()
 {
 	segments.clear();
 
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y - size / 2.0f, center.z + size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y - size / 2.0f, center.z + size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y + size / 2.0f, center.z + size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y + size / 2.0f, center.z + size / 2.0f), color, color));
+	for (int i=0; i<40; i++)
+		segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z),
+			                         Vector3d(center.x - fmod((::rand()%1001 - 500), size), center.y - fmod((::rand() % 1001 - 500), size), center.z),
+			                         color, color));
 
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y - size / 2.0f, center.z - size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y - size / 2.0f, center.z - size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y + size / 2.0f, center.z - size / 2.0f), color, color));
-	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y + size / 2.0f, center.z - size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y - size / 2.0f, center.z + size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y - size / 2.0f, center.z + size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y + size / 2.0f, center.z + size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y + size / 2.0f, center.z + size / 2.0f), color, color));
+
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y - size / 2.0f, center.z - size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y - size / 2.0f, center.z - size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x - size / 2.0f, center.y + size / 2.0f, center.z - size / 2.0f), color, color));
+//	segments.push_back(Segment3d(Vector3d(center.x, center.y, center.z), Vector3d(center.x + size / 2.0f, center.y + size / 2.0f, center.z - size / 2.0f), color, color));
 }
 
 void Target::Act(sf::Time delta)

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <list>
 #include <memory>
-#include <set>
 
 #include "geometry/vector3d.hpp"
 
@@ -25,7 +25,7 @@ namespace TunnelStrike {
 
 		bool outsideWalls() const;
 
-		std::shared_ptr<Target> hitTarget(std::set<std::shared_ptr<Target>> targets) const;
+		std::shared_ptr<Target> hitTarget(std::list<std::shared_ptr<Target>> targets) const;
 
 		friend std::ostream& operator << (std::ostream& os, const Shot& shot)
 		{

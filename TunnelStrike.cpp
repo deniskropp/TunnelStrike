@@ -4,7 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include <gl/glu.h>
+//#include <gl/glu.h>
 
 #include "Quad.hpp"
 

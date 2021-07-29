@@ -22,7 +22,14 @@ namespace TunnelStrike {
 
 			if (target) {
 				Sfx::instance().PlayHit();
-				world.targets->targets.erase(target);
+
+				for (auto it = world.targets->targets.begin(); it != world.targets->targets.end(); it++) {
+					if (*it == target) {
+						world.targets->targets.erase(it);
+						break;
+					}
+				}
+
 				world.killed();
 				continue;
 			}

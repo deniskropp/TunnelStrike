@@ -16,7 +16,7 @@ namespace TunnelStrike {
 	void Targets::Tick(sf::Time delta)
 	{
 		/* Build up list of still existing targets */
-		std::set<std::shared_ptr<Target>> targets_new;
+		std::list<std::shared_ptr<Target>> targets_new;
 
 		for (auto t : targets) {
 			/* Remove targets that got behind the camera */
@@ -24,7 +24,7 @@ namespace TunnelStrike {
 				continue;
 
 			/* keep target */
-			targets_new.insert(t);
+			targets_new.push_back(t);
 
 
 			t->Act(delta);
@@ -42,12 +42,12 @@ namespace TunnelStrike {
 
 			int v = ::rand() % 256;
 
-			//sf::Color color(v, 255 - v, ::rand() % 256);
-			sf::Color color(255, 255, 255);
+			sf::Color color(v, 255, 255 - v);
+			//sf::Color color(255, 255, 255);
 
 			auto target = std::make_shared<Target>(pos, 3.0f, color);
 
-			targets.insert(target);
+			targets.push_back(target);
 		}
 	}
 

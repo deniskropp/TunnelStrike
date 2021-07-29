@@ -1,7 +1,7 @@
 #pragma once
 
+#include <list>
 #include <memory>
-#include <set>
 
 #include "Entity.hpp"
 #include "Target.hpp"
@@ -16,7 +16,7 @@ namespace TunnelStrike {
 		friend class Shots;
 
 	private:
-		std::set<std::shared_ptr<Target>> targets;
+		std::list<std::shared_ptr<Target>> targets;
 		double lz;
 
 	public:
