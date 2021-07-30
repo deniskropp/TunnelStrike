@@ -19,12 +19,15 @@ namespace TunnelStrike {
 		sf::Sound shot_sound;
 		sf::SoundBuffer hit_buffer;
 		sf::Sound hit_sound;
+		sf::SoundBuffer die_buffer;
+		sf::Sound die_sound;
 
 	public:
 		Sfx();
 
 		void PlayShot();
 		void PlayHit();
+		void PlayDie();
 	};
 
 }

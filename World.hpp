@@ -37,10 +37,7 @@ namespace TunnelStrike {
 
 		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-		void killed()
-		{
-			kills++;
-		}
+		void killed();
 
 		unsigned int get_kills() const { return kills; }
 	};

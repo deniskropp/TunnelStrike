@@ -1,3 +1,4 @@
+#include "Sfx.hpp"
 #include "World.hpp"
 
 
@@ -34,5 +35,11 @@ namespace TunnelStrike {
 			entity->draw(target, states);
 	}
 
+	void World::killed()
+	{
+		kills++;
+
+		Sfx::instance().PlayDie();
+	}
 
 }
