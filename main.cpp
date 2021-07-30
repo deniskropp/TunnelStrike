@@ -118,7 +118,7 @@ namespace TunnelStrike {
 
 			world.shots->shots.push_back(std::make_shared<Shot>(pos, dir));
 
-//			Sfx::instance().PlayShot();
+			Sfx::instance().PlayShot();
 		}
 
 		bool CheckShoot()
