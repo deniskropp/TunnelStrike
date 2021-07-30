@@ -35,7 +35,7 @@ namespace TunnelStrike {
 		/* Insert further targets */
 		float cz = (float)Camera3d::instance().center().get_z();
 
-		if (cz - lz > 100.0f) {
+		if (cz - lz > 30.0f) {
 			lz = cz;
 
 			sf::Vector3f pos(::rand() % 11 - 5.0f, ::rand() % 11 - 5.0f, (float)Camera3d::instance().center().get_z() + 500.0f + (float)(::rand() % 200));
