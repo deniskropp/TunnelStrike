@@ -1,8 +1,15 @@
-CXXFLAGS += -std=c++17
+all: TunnelStrike
+
+CXXFLAGS += \
+	-std=c++17	\
+	-O2 -g2
 
 INCLUDES = \
-	-Igeometry		\
+	-Igeometry	\
 	`pkg-config --cflags sfml-audio sfml-graphics sfml-system sfml-window`
+
+LIBS = \
+	`pkg-config --libs sfml-audio sfml-graphics sfml-system sfml-window`
 
 OBJECTS = \
 	Crosshair.o		\
@@ -26,13 +33,8 @@ OBJECTS = \
 	utils/parameters.o	\
 	utils/tools.o
 
-all: TunnelStrike
-
 TunnelStrike: $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $+ `pkg-config --libs sfml-audio sfml-graphics sfml-system sfml-window`
+	$(CXX) $(CXXFLAGS) -o $@ $+ $(LIBS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $+
-
-clean:
-	rm -f TunnelStrike $(OBJECTS)
