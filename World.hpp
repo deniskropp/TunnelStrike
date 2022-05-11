@@ -35,7 +35,7 @@ namespace TunnelStrike {
 
 		void Tick(sf::Time delta);
 
-		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+		virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
 
 		void killed();
 

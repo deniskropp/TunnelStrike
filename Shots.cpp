@@ -47,7 +47,7 @@ namespace TunnelStrike {
 		shots = shots_new;
 	}
 
-	void Shots::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Shots::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		// draw shots
 		for (auto s : shots)

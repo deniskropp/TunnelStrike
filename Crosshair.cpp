@@ -28,7 +28,7 @@ namespace TunnelStrike {
 	{
 	}
 
-	void Crosshair::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Crosshair::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		target.draw(v, states);
 	}

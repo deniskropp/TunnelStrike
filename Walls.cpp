@@ -9,7 +9,8 @@ namespace TunnelStrike {
 		Entity(world),
 		maxz(0.0f)
 	{
-		shader.loadFromFile("wall.vert", "wall.frag");
+		if (!shader.loadFromFile("wall.vert", "wall.frag"))
+			throw std::runtime_error("shader loading failed");
 	}
 
 	void Walls::Tick(sf::Time delta)
@@ -58,13 +59,15 @@ namespace TunnelStrike {
 		}
 	}
 
-	void Walls::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Walls::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
-		states.shader = &shader;
+		sf::RenderStates s(states);
+
+		s.shader = &shader;
 
 		// draw walls
 		for (auto& w : q)
-			target.draw(w, states);
+			target.draw(w, s);
 	}
 
 

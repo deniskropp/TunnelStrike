@@ -94,7 +94,8 @@ namespace TunnelStrike {
 				else if (event.type == sf::Event::Resized) {
 					//LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
 
-					window.setView(sf::View(sf::FloatRect(0, 0, (float)event.size.width, (float)event.size.height)));
+					window.setView(sf::View(sf::FloatRect(sf::Vector2f(0.0f, 0.0f),
+									      sf::Vector2f((float)event.size.width, (float)event.size.height))));
 
 					Parameters::update_window_size(event.size.width, event.size.height);
 
@@ -296,12 +297,13 @@ namespace TunnelStrike {
 		public:
 			Stats()
 			{
-				font.loadFromFile("calibri.ttf");
+				if (!font.loadFromFile("calibri.ttf"))
+					throw std::runtime_error("font loading failed");
 
 				setFont(font);
 				setCharacterSize(48);
 				setFillColor(sf::Color::White);
-				setPosition(20.0f, 20.0f);
+				setPosition(sf::Vector2f(20.0f, 20.0f));
 			}
 		};
 

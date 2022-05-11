@@ -20,8 +20,6 @@ namespace TunnelStrike {
 		Entity(World& world) : world(world) {}
 
 		virtual void Tick(sf::Time delta) = 0;
-
-		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 	};
 
 

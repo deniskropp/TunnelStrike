@@ -24,7 +24,7 @@ namespace TunnelStrike {
 		return *this;
 	}
 
-	void Segment3d::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Segment3d::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		Segment3d ts = Camera3d::instance().transform_segment(*this);
 

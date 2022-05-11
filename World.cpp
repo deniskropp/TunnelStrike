@@ -29,7 +29,7 @@ namespace TunnelStrike {
 		}
 	}
 
-	void World::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void World::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		for (auto entity : entities)
 			entity->draw(target, states);

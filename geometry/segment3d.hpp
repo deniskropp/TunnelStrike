@@ -24,7 +24,7 @@ namespace TunnelStrike {
 		Segment3d& operator=(const Segment3d& s);
 		Segment3d operator+=(const Vector3d& v);
 
-		virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+		virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
 
 
 		friend class Plane3d;

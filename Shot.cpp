@@ -11,7 +11,7 @@ namespace TunnelStrike {
 	{
 	}
 
-	void Shot::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Shot::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		Vector3d p = position(clock.getElapsedTime());
 

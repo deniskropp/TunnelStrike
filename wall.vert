@@ -1,4 +1,4 @@
-out vec4 ver;
+varying vec4 ver;
 
 void main()
 {

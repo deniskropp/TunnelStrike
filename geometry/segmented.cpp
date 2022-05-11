@@ -9,7 +9,7 @@ namespace TunnelStrike {
 	{
 	}
 
-	void Segmented::draw(sf::RenderTarget& target, sf::RenderStates states) const
+	void Segmented::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
 		sf::VertexArray figure(sf::Lines);
 

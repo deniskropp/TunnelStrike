@@ -1,6 +1,6 @@
-#version 150
+#version 140
 
-in vec4 ver;
+varying vec4 ver;
 
 void main()
 {
