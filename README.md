@@ -1,10 +1,10 @@
 # TunnelStrike
 
-![Screenshot](https://github.com/deniskropp/TunnelStrike/raw/main/screenshots/TunnelStrike1.png)
-
 ## Description
 
-3D Shooter moving through endless tunnel with creatures (enemies).
+3D Shooter, moving through endless tunnel with creatures (enemies).
+
+![Screenshot](https://github.com/deniskropp/TunnelStrike/raw/main/screenshots/TunnelStrike1.png)
 
 ## Features
 
