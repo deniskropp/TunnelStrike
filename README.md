@@ -18,7 +18,13 @@
 
 ### Evolving creatures
 
-    GA based logic controlling motion depending on
-    position relative to player, bullets...
+    GA based logic controlling motion depending on position relative to player, bullets...
+    Appearance or structure of the bodies evolving based upon survival or human assessment
 
 ### Simulation decoupled from display
+
+    Even with low FPS the bullets and creatures do well behave
+
+### Other features
+
+    Permanent storage of information from evolution
