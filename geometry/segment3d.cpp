@@ -33,7 +33,7 @@ namespace TunnelStrike {
 				return;
 		}
 
-		sf::VertexArray figure(sf::Lines, 2);
+		sf::VertexArray figure(sf::PrimitiveType::Lines, 2);
 
 		figure[0] = sf::Vertex(Camera3d::instance().frustrum[0].get_projection_on_plane(ts.a, Parameters::window_width, Parameters::window_height));
 		figure[1] = sf::Vertex(Camera3d::instance().frustrum[0].get_projection_on_plane(ts.b, Parameters::window_width, Parameters::window_height));

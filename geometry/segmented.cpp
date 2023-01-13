@@ -11,7 +11,7 @@ namespace TunnelStrike {
 
 	void Segmented::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
-		sf::VertexArray figure(sf::Lines);
+		sf::VertexArray figure(sf::PrimitiveType::Lines);
 
 		for (auto s : segments) {
 			bool outside_frustrum = false;

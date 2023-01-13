@@ -45,7 +45,7 @@ namespace TunnelStrike {
 
 	// #TODO: missing comment
 	void Solid3d::render_solid(sf::RenderWindow& window, const unsigned window_width, const unsigned window_height, const Camera3d& camera) {
-		sf::VertexArray figure(sf::Lines);
+		sf::VertexArray figure(sf::PrimitiveType::Lines);
 
 		for (auto s : edges) {
 			bool outside_frustrum = false;

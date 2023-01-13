@@ -48,9 +48,9 @@ namespace TunnelStrike {
 			return true;
 		else if (da > 0 && db < 0) {
 			double f = da / (da - db); // intersection factor (between 0 and 1)
-			sf::Color new_color = sf::Color(s.a.color.r + (sf::Uint8)(f * (s.b.color.r - s.a.color.r)),
-											s.a.color.g + (sf::Uint8)(f * (s.b.color.g - s.a.color.g)),
-											s.a.color.b + (sf::Uint8)(f * (s.b.color.b - s.a.color.b)));
+			sf::Color new_color = sf::Color(s.a.color.r + (std::uint8_t)(f * (s.b.color.r - s.a.color.r)),
+											s.a.color.g + (std::uint8_t)(f * (s.b.color.g - s.a.color.g)),
+											s.a.color.b + (std::uint8_t)(f * (s.b.color.b - s.a.color.b)));
 			s.b = s.a + (s.b - s.a) * f;
 
 			s.b.color = new_color;
@@ -67,7 +67,7 @@ namespace TunnelStrike {
 	sf::Vertex Plane3d::get_projection_on_plane(const Vector3d& v, const unsigned window_width, const unsigned window_height) const {
 		sf::Color vertex_color = v.color;
 
-		vertex_color.a = (sf::Uint8)(map(get_signed_distance_from_point_to_plane(v), 0, PROJECTION_MAX_DEPTH, 255, 0));
+		vertex_color.a = (std::uint8_t)(map(get_signed_distance_from_point_to_plane(v), 0, PROJECTION_MAX_DEPTH, 255, 0));
 
 		return sf::Vertex(sf::Vector2f((float)(PROJECTION_FACTOR * v.x / v.z) + window_width / 2,
 									   (float)(PROJECTION_FACTOR * v.y / v.z) + window_height / 2),

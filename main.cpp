@@ -330,7 +330,7 @@ int main()
 
 	window_settings.antialiasingLevel = 8;
 
-	sf::RenderWindow window(sf::VideoMode(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT), "TunnelStrike", sf::Style::Close | sf::Style::Resize, window_settings);
+	sf::RenderWindow window(sf::VideoMode({INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT}), "TunnelStrike", sf::Style::Close | sf::Style::Resize, window_settings);
 
 	window.setVerticalSyncEnabled(true);
 	window.setKeyRepeatEnabled(false);
