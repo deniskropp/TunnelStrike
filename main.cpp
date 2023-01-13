@@ -56,7 +56,7 @@ namespace TunnelStrike {
 
 				float d = delta.asSeconds();
 
-				while (d > 0.01f) {
+				while (d > 0.0f) {
 					//if (d < 0.1f)
 						HandleCamera();
 
