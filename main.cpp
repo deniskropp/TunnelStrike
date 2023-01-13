@@ -52,20 +52,19 @@ namespace TunnelStrike {
 			while (window.isOpen()) {
 				sf::Time delta = loop_timer.restart();
 
-				ProcessEvents();
-
 				float d = delta.asSeconds();
 
 				while (d > 0.0f) {
-					//if (d < 0.1f)
-						HandleCamera();
+					ProcessEvents();
 
-					if (d > 0.01f)
-						world.Tick(sf::seconds(0.01f));
+					HandleCamera();
+
+					if (d > 0.003f)
+						world.Tick(sf::seconds(0.003f));
 					else
 						world.Tick(sf::seconds(d));
 
-					d -= 0.01f;
+					d -= 0.003f;
 				}
 
 				RenderFrame();
@@ -164,53 +163,61 @@ namespace TunnelStrike {
 			cursor.x += dx;
 			cursor.y += dy;
 
-			if (dx > 0) {
+//			if (dx > 0) {
 				if (tc.x + dx > 70)
 					dx = 70 - tc.x;
-			}
-			else if (dx < 0) {
+//			}
+//			else if (dx < 0) {
 				if (tc.x + dx < -70)
 					dx = -70 - tc.x;
-			}
+//			}
 
-			if (dy > 0) {
+//			if (dy > 0) {
 				if (tc.y + dy > 70)
 					dy = 70 - tc.y;
-			}
-			else if (dy < 0) {
+//			}
+//			else if (dy < 0) {
 				if (tc.y + dy < -70)
 					dy = -70 - tc.y;
-			}
+//			}
 
 
 #if 1
-			static int sx = 1;
-			static int sy = 1;
+			if (::rand() % 10 == 0) {
+				static int sx = 1;
+				static int sy = 1;
 
-			if (::rand() % 80 == 0)
-				sx = -sx;
+				if (::rand() % 30 == 0)
+					sx = -sx;
 
-			if (::rand() % 80 == 0)
-				sy = -sy;
+				if (::rand() % 30 == 0)
+					sy = -sy;
 
-			if (tc.x > 5) {
-				sx = -1;
+				if (::rand() % 20 == 0)
+					std::swap(sx, sy);
+
+
+				int of = 11;
+
+				if (tc.x > of) {
+					sx = -1;
+				}
+
+				if (tc.x < -of) {
+					sx = 1;
+				}
+
+				if (tc.y > of) {
+					sy = -1;
+				}
+
+				if (tc.y < -of) {
+					sy = 1;
+				}
+
+				dx += sx;
+				dy += sy;
 			}
-
-			if (tc.x < -5) {
-				sx = 1;
-			}
-
-			if (tc.y > 5) {
-				sy = -1;
-			}
-
-			if (tc.y < -5) {
-				sy = 1;
-			}
-
-			dx += sx;
-			dy += sy;
 #else
 
 			if (!world.targets->targets.empty()) {
@@ -260,14 +267,14 @@ namespace TunnelStrike {
 				Camera3d::instance().rotate((float)dx, (float)dy);
 			}
 
-			Camera3d::instance().translate(Vector3d(0, 0, 0.3f));
+			Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
 
 
 			static int sh = 0;
 
 			if (!sh) {
 				if (CheckShoot()) {
-					sh = 10;
+					sh = 40;
 
 					Shoot();
 				}
