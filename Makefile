@@ -6,7 +6,7 @@ CXXFLAGS += \
 
 INCLUDES = \
 	-Igeometry	\
-	`pkg-config --cflags sfml-audio sfml-graphics sfml-system sfml-window`
+	`pkg-config --cflags sfml-system`
 
 LIBS = \
 	`pkg-config --libs sfml-audio sfml-graphics sfml-system sfml-window`
@@ -38,3 +38,6 @@ TunnelStrike: $(OBJECTS)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $+
+
+clean:
+	rm -rf TunnelStrike $(OBJECTS)
