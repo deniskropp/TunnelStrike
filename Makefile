@@ -4,7 +4,7 @@ CXXFLAGS += \
 	-std=c++17	\
 	-O2 -g2
 
-INCLUDES = \
+CPPFLAGS = \
 	-Igeometry	\
 	`pkg-config --cflags sfml-system`
 
@@ -37,7 +37,7 @@ TunnelStrike: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $+ $(LIBS)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $+
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $+
 
 clean:
-	rm -rf TunnelStrike $(OBJECTS)
+	$(RM) TunnelStrike $(OBJECTS)
