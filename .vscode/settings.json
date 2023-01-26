@@ -1,0 +1,11 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "c:\\Users\\wetek.T04A0.001\\repos\\TunnelStrike",
+            "binaryPath": "c:\\Users\\wetek.T04A0.001\\repos\\TunnelStrike\\TunnelStrike",
+            "binaryArgs": []
+        }
+    ],
+    "editor.detectIndentation": false,
+    "editor.wordWrap": "off"
+}
