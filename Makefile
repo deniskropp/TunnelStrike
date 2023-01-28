@@ -12,31 +12,31 @@ LIBS = \
 	`pkg-config --libs sfml-audio sfml-graphics sfml-system sfml-window`
 
 OBJECTS = \
-	Crosshair.o		\
-	main.o			\
-	Quad.o			\
-	Sfx.o			\
-	Shot.o			\
-	Shots.o			\
-	Target.o		\
-	Targets.o		\
-	Walls.o			\
-	World.o			\
-	geometry/camera3d.o	\
-	geometry/geometry.o	\
-	geometry/plane3d.o	\
-	geometry/segment3d.o	\
-	geometry/segmented.o	\
-	geometry/solid3d.o	\
-	geometry/vector3d.o	\
-	utils/looptimer.o	\
-	utils/parameters.o	\
-	utils/tools.o
+	objs/Crosshair.o			\
+	objs/main.o					\
+	objs/Quad.o					\
+	objs/Sfx.o					\
+	objs/Shot.o					\
+	objs/Shots.o				\
+	objs/Target.o				\
+	objs/Targets.o				\
+	objs/Walls.o				\
+	objs/World.o				\
+	objs/geometry/camera3d.o	\
+	objs/geometry/geometry.o	\
+	objs/geometry/plane3d.o		\
+	objs/geometry/segment3d.o	\
+	objs/geometry/segmented.o	\
+	objs/geometry/solid3d.o		\
+	objs/geometry/vector3d.o	\
+	objs/utils/looptimer.o		\
+	objs/utils/parameters.o		\
+	objs/utils/tools.o
 
 TunnelStrike: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $+ $(LIBS)
 
-%.o: %.cpp
+objs/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $+
 
 clean:

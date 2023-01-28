@@ -3,8 +3,8 @@
 #include <sstream>
 #include <vector>
 
-//#include <geometry.hpp>
-//#include <parabolic-pointer.hpp>
+// #include <geometry.hpp>
+// #include <parabolic-pointer.hpp>
 
 #include "utils/parameters.hpp"
 #include "geometry/camera3d.hpp"
@@ -16,26 +16,23 @@
 
 #include "World.hpp"
 
-//#include <parallel_f/log.hpp>
+// #include <parallel_f/log.hpp>
 
-
-
-namespace TunnelStrike {
-
+namespace TunnelStrike
+{
 
 	class Main
 	{
 	private:
-		sf::RenderWindow& window;
+		sf::RenderWindow &window;
 		World world;
 
 		sf::Vector2i tc;
 		sf::Vector2i cursor;
 
 	public:
-		Main(sf::RenderWindow& window)
-			:
-			window(window)
+		Main(sf::RenderWindow &window)
+			: window(window)
 		{
 			srand((unsigned int)time(NULL));
 
@@ -49,12 +46,14 @@ namespace TunnelStrike {
 		{
 			sf::Clock loop_timer;
 
-			while (window.isOpen()) {
+			while (window.isOpen())
+			{
 				sf::Time delta = loop_timer.restart();
 
 				float d = delta.asSeconds();
 
-				while (d > 0.0f) {
+				while (d > 0.0f)
+				{
 					ProcessEvents();
 
 					HandleCamera();
@@ -72,36 +71,40 @@ namespace TunnelStrike {
 				// other
 				Parameters::print_mean_CPU_usage(std::cout, delta.asMilliseconds());
 
-//				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)delta.asMilliseconds())));
+				//				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)delta.asMilliseconds())));
 			}
 		}
 
 	private:
 		void ProcessEvents()
 		{
-			//LOG_DEBUG("Main::ProcessEvents()\n");
+			// LOG_DEBUG("Main::ProcessEvents()\n");
 
 			sf::Event event;
 
 			// handle events
-			while (window.pollEvent(event)) {
-				if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-					//LOG_DEBUG("Main::ProcessEvents() -> CLOSE\n");
+			while (window.pollEvent(event))
+			{
+				if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+				{
+					// LOG_DEBUG("Main::ProcessEvents() -> CLOSE\n");
 
 					window.close();
 				}
-				else if (event.type == sf::Event::Resized) {
-					//LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
+				else if (event.type == sf::Event::Resized)
+				{
+					// LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
 
 					window.setView(sf::View(sf::FloatRect(sf::Vector2f(0.0f, 0.0f),
-									      sf::Vector2f((float)event.size.width, (float)event.size.height))));
+														  sf::Vector2f((float)event.size.width, (float)event.size.height))));
 
 					Parameters::update_window_size(event.size.width, event.size.height);
 
 					Camera3d::instance().reload_frustrum();
 				}
-				else if (event.type == sf::Event::MouseButtonPressed || sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-					//LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
+				else if (event.type == sf::Event::MouseButtonPressed || sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+				{
+					// LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
 
 					Shoot();
 				}
@@ -129,10 +132,12 @@ namespace TunnelStrike {
 			dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
 			dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
 
-			for (float a = 0.0f; a < 100.0f; a += 0.3f) {
+			for (float a = 0.0f; a < 100.0f; a += 0.3f)
+			{
 				Vector3d current = pos + dir * a;
 
-				for (auto t : world.targets->targets) {
+				for (auto t : world.targets->targets)
+				{
 					if (current.distance_to(t->GetCenter()) < 5.0f)
 						return true;
 				}
@@ -163,27 +168,27 @@ namespace TunnelStrike {
 			cursor.x += dx;
 			cursor.y += dy;
 
-//			if (dx > 0) {
-				if (tc.x + dx > 70)
-					dx = 70 - tc.x;
-//			}
-//			else if (dx < 0) {
-				if (tc.x + dx < -70)
-					dx = -70 - tc.x;
-//			}
+			//			if (dx > 0) {
+			if (tc.x + dx > 70)
+				dx = 70 - tc.x;
+			//			}
+			//			else if (dx < 0) {
+			if (tc.x + dx < -70)
+				dx = -70 - tc.x;
+			//			}
 
-//			if (dy > 0) {
-				if (tc.y + dy > 70)
-					dy = 70 - tc.y;
-//			}
-//			else if (dy < 0) {
-				if (tc.y + dy < -70)
-					dy = -70 - tc.y;
-//			}
-
+			//			if (dy > 0) {
+			if (tc.y + dy > 70)
+				dy = 70 - tc.y;
+			//			}
+			//			else if (dy < 0) {
+			if (tc.y + dy < -70)
+				dy = -70 - tc.y;
+				//			}
 
 #if 1
-			if (::rand() % 10 == 0) {
+			if (::rand() % 10 == 0)
+			{
 				static int sx = 1;
 				static int sy = 1;
 
@@ -196,22 +201,25 @@ namespace TunnelStrike {
 				if (::rand() % 20 == 0)
 					std::swap(sx, sy);
 
-
 				int of = 11;
 
-				if (tc.x > of) {
+				if (tc.x > of)
+				{
 					sx = -1;
 				}
 
-				if (tc.x < -of) {
+				if (tc.x < -of)
+				{
 					sx = 1;
 				}
 
-				if (tc.y > of) {
+				if (tc.y > of)
+				{
 					sy = -1;
 				}
 
-				if (tc.y < -of) {
+				if (tc.y < -of)
+				{
 					sy = 1;
 				}
 
@@ -220,7 +228,8 @@ namespace TunnelStrike {
 			}
 #else
 
-			if (!world.targets->targets.empty()) {
+			if (!world.targets->targets.empty())
+			{
 				auto target = world.targets->targets.back();
 
 				Vector3d pos(0, 0, 0);
@@ -243,23 +252,27 @@ namespace TunnelStrike {
 				std::cout << "a_h " << a_h << std::endl;
 				std::cout << "a_v " << a_v << std::endl;
 
-
-				if (v_s_h.x - v_t_h.x < 0) {
+				if (v_s_h.x - v_t_h.x < 0)
+				{
 					dx = 1;
 				}
-				else {
+				else
+				{
 					dx = -1;
 				}
 
-				if (v_s_h.y - v_t_h.y < 0) {
+				if (v_s_h.y - v_t_h.y < 0)
+				{
 					dy = 1;
 				}
-				else {
+				else
+				{
 					dy = -1;
 				}
 			}
-#endif			
-			if (dx || dy) {
+#endif
+			if (dx || dy)
+			{
 				tc.x += dx;
 				tc.y += dy;
 
@@ -269,11 +282,12 @@ namespace TunnelStrike {
 
 			Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
 
-
 			static int sh = 0;
 
-			if (!sh) {
-				if (CheckShoot()) {
+			if (!sh)
+			{
+				if (CheckShoot())
+				{
 					sh = 40;
 
 					Shoot();
@@ -304,7 +318,7 @@ namespace TunnelStrike {
 		public:
 			Stats()
 			{
-				if (!font.loadFromFile("calibri.ttf"))
+				if (!font.loadFromFile("data/calibri.ttf"))
 					throw std::runtime_error("font loading failed");
 
 				setFont(font);
@@ -326,9 +340,7 @@ namespace TunnelStrike {
 		Stats stats;
 	};
 
-
 }
-
 
 int main()
 {
