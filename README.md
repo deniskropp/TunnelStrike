@@ -16,6 +16,8 @@
     Sound effects
     Self-running mode
 
+## Planned Features
+
 ### Evolving creatures
 
     GA based logic controlling motion depending on position relative to player, bullets...
