@@ -27,6 +27,8 @@ namespace TunnelStrike {
 
 		std::shared_ptr<Target> hitTarget(std::list<std::shared_ptr<Target>> targets) const;
 
+		Vector3d GetCenter() const { return pos; }
+
 		friend std::ostream& operator << (std::ostream& os, const Shot& shot)
 		{
 			os << shot.position(shot.clock.getElapsedTime());

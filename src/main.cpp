@@ -1,5 +1,6 @@
 #include <memory>
 #include <random>
+#include <fstream>
 #include <sstream>
 #include <vector>
 
@@ -30,19 +31,47 @@ namespace TunnelStrike
 		sf::Vector2i tc;
 		sf::Vector2i cursor;
 
-	public:
+        sf::Clock time;
+
+    public:
 		Main(sf::RenderWindow &window)
 			: window(window)
 		{
-			srand((unsigned int)time(NULL));
+            srand((unsigned int)::time(NULL));
 
-			cursor.x = sf::Mouse::getPosition(window).x;
+            cursor.x = sf::Mouse::getPosition(window).x;
 			cursor.y = sf::Mouse::getPosition(window).y;
 
 			Camera3d::instance().translate(Vector3d(0, 0, 100.0f));
 		}
 
-		void run()
+        // Export world to file
+        void ExportWorld()
+        {
+            std::ofstream file("world.txt");
+
+            for (auto t : world.targets->targets)
+            {
+                file << "target " << t->GetCenter().get_x() << " " << t->GetCenter().get_y() << " " << t->GetCenter().get_z() << std::endl;
+            }
+
+            for (auto s : world.shots->shots)
+            {
+                file << "shot " << s->GetCenter().get_x() << " " << s->GetCenter().get_y() << " " << s->GetCenter().get_z() << std::endl;
+            }
+
+            file << "camera " << Camera3d::instance().center().get_x() << " " << Camera3d::instance().center().get_y() << " " << Camera3d::instance().center().get_z() << std::endl;
+
+            file << "cursor " << cursor.x << " " << cursor.y << std::endl;
+
+            file << "tc " << tc.x << " " << tc.y << std::endl;
+
+            file << "time " << time.getElapsedTime().asMicroseconds() << std::endl;
+
+            file.close();
+        }
+
+        void run()
 		{
 			sf::Clock loop_timer;
 
@@ -58,17 +87,19 @@ namespace TunnelStrike
 
 					HandleCamera();
 
-					if (d > 0.003f)
-						world.Tick(sf::seconds(0.003f));
-					else
+                    if (d > 0.03f)
+                        world.Tick(sf::seconds(0.03f));
+                    else
 						world.Tick(sf::seconds(d));
 
-					d -= 0.003f;
-				}
+                    d -= 0.03f;
+                }
 
 				RenderFrame();
 
-				// other
+                //				ExportWorld();
+
+                // other
 				Parameters::print_mean_CPU_usage(std::cout, delta.asMilliseconds());
 
 				//				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)delta.asMilliseconds())));
@@ -186,7 +217,7 @@ namespace TunnelStrike
 				dy = -70 - tc.y;
 				//			}
 
-#if 1
+#if 0
 			if (::rand() % 10 == 0)
 			{
 				static int sx = 1;
@@ -225,50 +256,6 @@ namespace TunnelStrike
 
 				dx += sx;
 				dy += sy;
-			}
-#else
-
-			if (!world.targets->targets.empty())
-			{
-				auto target = world.targets->targets.back();
-
-				Vector3d pos(0, 0, 0);
-				Vector3d dir(0, 0, 50);
-
-				dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
-				dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
-
-				polymer::float3 v_s_h(dir.get_x(), 0, 1);
-				polymer::float3 v_s_v(0, dir.get_y(), 1);
-				polymer::float3 v_t_h(target->GetCenter().get_x(), 0, 1);
-				polymer::float3 v_t_v(0, target->GetCenter().get_y(), 1);
-
-				std::cout << "v_s_h " << v_s_h.x << std::endl;
-				std::cout << "v_t_h " << v_t_h.x << std::endl;
-
-				float a_h = polymer::angle_between(v_s_h, v_t_h, polymer::float3());
-				float a_v = polymer::angle_between(v_s_v, v_t_v, polymer::float3());
-
-				std::cout << "a_h " << a_h << std::endl;
-				std::cout << "a_v " << a_v << std::endl;
-
-				if (v_s_h.x - v_t_h.x < 0)
-				{
-					dx = 1;
-				}
-				else
-				{
-					dx = -1;
-				}
-
-				if (v_s_h.y - v_t_h.y < 0)
-				{
-					dy = 1;
-				}
-				else
-				{
-					dy = -1;
-				}
 			}
 #endif
 			if (dx || dy)

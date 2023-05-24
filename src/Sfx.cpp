@@ -5,13 +5,19 @@ namespace TunnelStrike
 
 	Sfx::Sfx()
 	{
-		shot_buffer.loadFromFile("data/shot.wav");
+		if (!shot_buffer.loadFromFile("data/shot.wav"))
+			throw std::runtime_error("Failed to load shot.wav");
+
 		shot_sound.setBuffer(shot_buffer);
 
-		hit_buffer.loadFromFile("data/hit.wav");
+		if (!hit_buffer.loadFromFile("data/hit.wav"))
+			throw std::runtime_error("Failed to load hit.wav");
+		
 		hit_sound.setBuffer(hit_buffer);
 
-		die_buffer.loadFromFile("data/die.wav");
+		if (!die_buffer.loadFromFile("data/die.wav"))
+			throw std::runtime_error("Failed to load die.wav");
+		
 		die_sound.setBuffer(die_buffer);
 	}
 
