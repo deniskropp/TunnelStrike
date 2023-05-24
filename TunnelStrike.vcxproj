@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -116,14 +116,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Denis Oliver Kropp\source\repos\polymer\lib-polymer;C:\Users\Denis Oliver Kropp\source\repos\deniskropp\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\kropp\source\repos\SFML\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>Default</LanguageStandard_C>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\Users\Denis Oliver Kropp\source\repos\deniskropp\SFML\out\build\x64-Debug\lib\*.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\Users\kropp\source\repos\SFML\out\build\x64-Debug\lib\*.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,28 +143,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Crosshair.cpp" />
-    <ClCompile Include="geometry\camera3d.cpp" />
-    <ClCompile Include="geometry\geometry.cpp" />
-    <ClCompile Include="geometry\plane3d.cpp" />
-    <ClCompile Include="geometry\segment3d.cpp" />
-    <ClCompile Include="geometry\segmented.cpp" />
-    <ClCompile Include="geometry\solid3d.cpp" />
-    <ClCompile Include="geometry\vector3d.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Quad.cpp" />
-    <ClCompile Include="Sfx.cpp" />
-    <ClCompile Include="Shot.cpp" />
-    <ClCompile Include="Shots.cpp" />
-    <ClCompile Include="Target.cpp" />
-    <ClCompile Include="Targets.cpp" />
-    <ClCompile Include="utils\looptimer.cpp" />
-    <ClCompile Include="utils\parameters.cpp" />
-    <ClCompile Include="utils\tools.cpp" />
-    <ClCompile Include="Walls.cpp" />
-    <ClCompile Include="World.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Crosshair.hpp" />
     <ClInclude Include="Entity.hpp" />
@@ -185,6 +164,28 @@
     <ClInclude Include="utils\tools.hpp" />
     <ClInclude Include="Walls.hpp" />
     <ClInclude Include="World.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Crosshair.cpp" />
+    <ClCompile Include="src\geometry\camera3d.cpp" />
+    <ClCompile Include="src\geometry\geometry.cpp" />
+    <ClCompile Include="src\geometry\plane3d.cpp" />
+    <ClCompile Include="src\geometry\segment3d.cpp" />
+    <ClCompile Include="src\geometry\segmented.cpp" />
+    <ClCompile Include="src\geometry\solid3d.cpp" />
+    <ClCompile Include="src\geometry\vector3d.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Quad.cpp" />
+    <ClCompile Include="src\Sfx.cpp" />
+    <ClCompile Include="src\Shot.cpp" />
+    <ClCompile Include="src\Shots.cpp" />
+    <ClCompile Include="src\Target.cpp" />
+    <ClCompile Include="src\Targets.cpp" />
+    <ClCompile Include="src\utils\looptimer.cpp" />
+    <ClCompile Include="src\utils\parameters.cpp" />
+    <ClCompile Include="src\utils\tools.cpp" />
+    <ClCompile Include="src\Walls.cpp" />
+    <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
