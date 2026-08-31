@@ -13,15 +13,15 @@ namespace TunnelStrike {
 
 	void Shots::Tick(sf::Time delta)
 	{
-		/* Build up list of still existing shots */
 		std::vector<std::shared_ptr<Shot>> shots_new;
 
 		for (auto s : shots) {
-			/* Check if shot hit any target */
 			std::shared_ptr<Target> target = s->hitTarget(world.targets->targets);
 
 			if (target) {
 				Sfx::instance().PlayHit();
+
+				world.evo().record(target->genome(), target->fitnessIfKilled());
 
 				for (auto it = world.targets->targets.begin(); it != world.targets->targets.end(); it++) {
 					if (*it == target) {
@@ -34,13 +34,11 @@ namespace TunnelStrike {
 				continue;
 			}
 
-			/* Check if shot got outside */
 			if (s->outsideWalls()) {
 				Sfx::instance().PlayHit();
 				continue;
 			}
 
-			/* Keep shot */
 			shots_new.push_back(s);
 		}
 
@@ -49,7 +47,6 @@ namespace TunnelStrike {
 
 	void Shots::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 	{
-		// draw shots
 		for (auto s : shots)
 			target.draw(*s);
 	}
