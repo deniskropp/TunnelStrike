@@ -1,7 +1,5 @@
 # TunnelStrike
 
-## Description
-
 3D Shooter, moving through endless tunnel with creatures (enemies).
 
 ![Screenshot](https://github.com/deniskropp/TunnelStrike/raw/main/screenshots/TunnelStrike1.png)
@@ -15,18 +13,35 @@
 ### Advanced features
     Sound effects
     Self-running mode
+    Fixed simulation clock (30 ms tick, display decoupled)
+    GA-controlled creature motion and body structure
+    Persistent evolution archive under `evo/`
 
 ## Planned Features
 
 ### Evolving creatures
-
     GA based logic controlling motion depending on position relative to player, bullets...
     Appearance or structure of the bodies evolving based upon survival or human assessment
 
 ### Simulation decoupled from display
-
     Even with low FPS the bullets and creatures do well behave
 
 ### Other features
-
     Permanent storage of information from evolution
+
+## Build
+
+    make
+    ./TunnelStrike
+
+Headless simulation / archive replay seed:
+
+    make sim
+    ./TunnelStrike-sim
+
+Evolution state is written to `evo/generation.jsonl`, `evo/pool.txt` and `evo/snapshot.txt`.
+A pool file is loaded automatically on the next start.
+
+## OCS
+
+Protocol document: [`docs/ocs-protocol.md`](docs/ocs-protocol.md)

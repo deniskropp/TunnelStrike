@@ -5,13 +5,14 @@ CXXFLAGS += \
 	-O2 -g2
 
 CPPFLAGS = \
-	-Igeometry	\
+	-Isrc	\
+	-Isrc/geometry	\
 	`pkg-config --cflags sfml-system`
 
 LIBS = \
 	`pkg-config --libs sfml-audio sfml-graphics sfml-system sfml-window`
 
-OBJECTS = \
+GAME_OBJECTS = \
 	objs/Crosshair.o			\
 	objs/main.o					\
 	objs/Quad.o					\
@@ -22,6 +23,8 @@ OBJECTS = \
 	objs/Targets.o				\
 	objs/Walls.o				\
 	objs/World.o				\
+	objs/evo/Population.o		\
+	objs/persist/Archive.o		\
 	objs/geometry/camera3d.o	\
 	objs/geometry/geometry.o	\
 	objs/geometry/plane3d.o		\
@@ -33,11 +36,21 @@ OBJECTS = \
 	objs/utils/parameters.o		\
 	objs/utils/tools.o
 
-TunnelStrike: $(OBJECTS)
+SIM_OBJECTS = \
+	$(filter-out objs/main.o,$(GAME_OBJECTS)) \
+	objs/sim_headless.o
+
+TunnelStrike: $(GAME_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $+ $(LIBS)
 
+TunnelStrike-sim: $(SIM_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $+ $(LIBS)
+
+sim: TunnelStrike-sim
+
 objs/%.o: src/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $+
 
 clean:
-	$(RM) TunnelStrike $(OBJECTS)
+	$(RM) TunnelStrike TunnelStrike-sim $(GAME_OBJECTS) objs/sim_headless.o

@@ -9,15 +9,20 @@
 #include "Shots.hpp"
 #include "Targets.hpp"
 #include "Walls.hpp"
+#include "evo/Population.hpp"
+#include "persist/Archive.hpp"
 
 
 namespace TunnelStrike {
+
 
 
 	class World : public sf::Drawable
 	{
 		friend class Main;
 		friend class Shots;
+		friend class Archive;
+		friend class Targets;
 
 	private:
 		std::vector<Entity*> entities;
@@ -29,6 +34,10 @@ namespace TunnelStrike {
 		std::unique_ptr<Walls> walls;
 
 		unsigned int kills;
+		unsigned long long ticks = 0;
+
+		Population population;
+		Archive archive;
 
 	public:
 		World();
@@ -40,6 +49,15 @@ namespace TunnelStrike {
 		void killed();
 
 		unsigned int get_kills() const { return kills; }
+
+		Population &evo() { return population; }
+		const Population &evo() const { return population; }
+
+		Archive &store() { return archive; }
+
+		unsigned long long tickIndex() const { return ticks; }
+
+		unsigned generation() const { return population.generationIndex(); }
 	};
 
 

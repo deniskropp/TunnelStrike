@@ -18,15 +18,31 @@ namespace TunnelStrike {
 		entities.push_back(shots.get());
 		entities.push_back(walls.get());
 		entities.push_back(targets.get());
+
+		std::vector<Genome> loaded;
+		if (archive.loadLatestPool(loaded))
+			population.seedFrom(loaded);
 	}
 
 	void World::Tick(sf::Time delta)
 	{
+		++ticks;
+
 		for (auto entity : entities) {
 			entity->age += delta;
 
 			entity->Tick(delta);
 		}
+
+		if (population.maybeEvolve()) {
+			archive.appendGeneration(
+				population.generationIndex(),
+				population.lastBestFitness(),
+				population.pool());
+		}
+
+		if (ticks % 120ull == 0)
+			archive.snapshotWorld(*this, population, ticks);
 	}
 
 	void World::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
@@ -41,5 +57,6 @@ namespace TunnelStrike {
 
 		Sfx::instance().PlayDie();
 	}
+
 
 }
