@@ -4,9 +4,6 @@
 #include <sstream>
 #include <vector>
 
-// #include <geometry.hpp>
-// #include <parabolic-pointer.hpp>
-
 #include "utils/parameters.hpp"
 #include "geometry/camera3d.hpp"
 #include "geometry/solid3d.hpp"
@@ -16,8 +13,7 @@
 #include "Shots.hpp"
 
 #include "World.hpp"
-
-// #include <parallel_f/log.hpp>
+#include "sim/SimClock.hpp"
 
 namespace TunnelStrike
 {
@@ -27,51 +23,31 @@ namespace TunnelStrike
 	private:
 		sf::RenderWindow &window;
 		World world;
+		SimClock clock;
 
 		sf::Vector2i tc;
 		sf::Vector2i cursor;
 
-        sf::Clock time;
+		sf::Clock time;
 
-    public:
+	public:
 		Main(sf::RenderWindow &window)
 			: window(window)
 		{
-            srand((unsigned int)::time(NULL));
+			srand((unsigned int)::time(NULL));
 
-            cursor.x = sf::Mouse::getPosition(window).x;
+			cursor.x = sf::Mouse::getPosition(window).x;
 			cursor.y = sf::Mouse::getPosition(window).y;
 
 			Camera3d::instance().translate(Vector3d(0, 0, 100.0f));
 		}
 
-        // Export world to file
-        void ExportWorld()
-        {
-            std::ofstream file("world.txt");
+		void ExportWorld()
+		{
+			world.store().snapshotWorld(world, world.evo(), clock.totalSteps());
+		}
 
-            for (auto t : world.targets->targets)
-            {
-                file << "target " << t->GetCenter().get_x() << " " << t->GetCenter().get_y() << " " << t->GetCenter().get_z() << std::endl;
-            }
-
-            for (auto s : world.shots->shots)
-            {
-                file << "shot " << s->GetCenter().get_x() << " " << s->GetCenter().get_y() << " " << s->GetCenter().get_z() << std::endl;
-            }
-
-            file << "camera " << Camera3d::instance().center().get_x() << " " << Camera3d::instance().center().get_y() << " " << Camera3d::instance().center().get_z() << std::endl;
-
-            file << "cursor " << cursor.x << " " << cursor.y << std::endl;
-
-            file << "tc " << tc.x << " " << tc.y << std::endl;
-
-            file << "time " << time.getElapsedTime().asMicroseconds() << std::endl;
-
-            file.close();
-        }
-
-        void run()
+		void run()
 		{
 			sf::Clock loop_timer;
 
@@ -79,53 +55,32 @@ namespace TunnelStrike
 			{
 				sf::Time delta = loop_timer.restart();
 
-				float d = delta.asSeconds();
-
-				while (d > 0.0f)
-				{
+				const int steps = clock.absorb(delta, [this](sf::Time step) {
 					ProcessEvents();
-
 					HandleCamera();
-
-                    if (d > 0.03f)
-                        world.Tick(sf::seconds(0.03f));
-                    else
-						world.Tick(sf::seconds(d));
-
-                    d -= 0.03f;
-                }
+					world.Tick(step);
+				});
+				clock.noteSteps(steps);
 
 				RenderFrame();
 
-                //				ExportWorld();
-
-                // other
 				Parameters::print_mean_CPU_usage(std::cout, delta.asMilliseconds());
-
-				//				sf::sleep(sf::milliseconds((sf::Int32)(MAX_MAIN_LOOP_DURATION - (double)delta.asMilliseconds())));
 			}
 		}
 
 	private:
 		void ProcessEvents()
 		{
-			// LOG_DEBUG("Main::ProcessEvents()\n");
-
 			sf::Event event;
 
-			// handle events
 			while (window.pollEvent(event))
 			{
 				if (event.type == sf::Event::Closed || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 				{
-					// LOG_DEBUG("Main::ProcessEvents() -> CLOSE\n");
-
 					window.close();
 				}
 				else if (event.type == sf::Event::Resized)
 				{
-					// LOG_DEBUG("Main::ProcessEvents() -> Window resized (%ux%u)\n", event.size.width, event.size.height);
-
 					window.setView(sf::View(sf::FloatRect(sf::Vector2f(0.0f, 0.0f),
 														  sf::Vector2f((float)event.size.width, (float)event.size.height))));
 
@@ -135,8 +90,6 @@ namespace TunnelStrike
 				}
 				else if (event.type == sf::Event::MouseButtonPressed || sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 				{
-					// LOG_DEBUG("Main::ProcessEvents() -> FIRE\n");
-
 					Shoot();
 				}
 			}
@@ -179,7 +132,6 @@ namespace TunnelStrike
 
 		void HandleCamera()
 		{
-			// move camera
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 				Camera3d::instance().move(Camera3d::DIRECTION::FRONT);
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
@@ -199,71 +151,20 @@ namespace TunnelStrike
 			cursor.x += dx;
 			cursor.y += dy;
 
-			//			if (dx > 0) {
 			if (tc.x + dx > 70)
 				dx = 70 - tc.x;
-			//			}
-			//			else if (dx < 0) {
 			if (tc.x + dx < -70)
 				dx = -70 - tc.x;
-			//			}
-
-			//			if (dy > 0) {
 			if (tc.y + dy > 70)
 				dy = 70 - tc.y;
-			//			}
-			//			else if (dy < 0) {
 			if (tc.y + dy < -70)
 				dy = -70 - tc.y;
-				//			}
 
-#if 0
-			if (::rand() % 10 == 0)
-			{
-				static int sx = 1;
-				static int sy = 1;
-
-				if (::rand() % 30 == 0)
-					sx = -sx;
-
-				if (::rand() % 30 == 0)
-					sy = -sy;
-
-				if (::rand() % 20 == 0)
-					std::swap(sx, sy);
-
-				int of = 11;
-
-				if (tc.x > of)
-				{
-					sx = -1;
-				}
-
-				if (tc.x < -of)
-				{
-					sx = 1;
-				}
-
-				if (tc.y > of)
-				{
-					sy = -1;
-				}
-
-				if (tc.y < -of)
-				{
-					sy = 1;
-				}
-
-				dx += sx;
-				dy += sy;
-			}
-#endif
 			if (dx || dy)
 			{
 				tc.x += dx;
 				tc.y += dy;
 
-				// rotate camera
 				Camera3d::instance().rotate((float)dx, (float)dy);
 			}
 
@@ -319,7 +220,8 @@ namespace TunnelStrike
 		{
 			std::stringstream ss;
 
-			ss << "Kills: " << world.get_kills();
+			ss << "Kills: " << world.get_kills()
+			   << "  Gen: " << world.generation();
 
 			stats.setString(ss.str());
 		}
@@ -331,7 +233,6 @@ namespace TunnelStrike
 
 int main()
 {
-	// setup window
 	sf::ContextSettings window_settings;
 
 	window_settings.antialiasingLevel = 8;
