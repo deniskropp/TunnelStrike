@@ -11,11 +11,18 @@
 namespace TunnelStrike {
 
 
+	void Shots::spawn(const Vector3d &pos, const Vector3d &dir)
+	{
+		shots.push_back(std::make_shared<Shot>(pos, dir));
+	}
+
 	void Shots::Tick(sf::Time delta)
 	{
 		std::vector<std::shared_ptr<Shot>> shots_new;
 
 		for (auto s : shots) {
+			s->Tick(delta);
+
 			std::shared_ptr<Target> target = s->hitTarget(world.targets->targets);
 
 			if (target) {

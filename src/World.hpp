@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
@@ -39,10 +40,15 @@ namespace TunnelStrike {
 		Population population;
 		Archive archive;
 
+		std::vector<std::pair<Vector3d, Vector3d>> pending_shots;
+
 	public:
 		World();
 
 		void Tick(sf::Time delta);
+
+		void fire(const Vector3d &pos, const Vector3d &dir);
+		std::vector<Vector3d> liveTargetCenters() const;
 
 		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 

@@ -24,9 +24,30 @@ namespace TunnelStrike {
 			population.seedFrom(loaded);
 	}
 
+	void World::fire(const Vector3d &pos, const Vector3d &dir)
+	{
+		pending_shots.emplace_back(pos, dir);
+	}
+
+	std::vector<Vector3d> World::liveTargetCenters() const
+	{
+		std::vector<Vector3d> out;
+		if (!targets)
+			return out;
+
+		out.reserve(targets->targets.size());
+		for (const auto &t : targets->targets)
+			out.push_back(t->GetCenter());
+		return out;
+	}
+
 	void World::Tick(sf::Time delta)
 	{
 		++ticks;
+
+		for (const auto &queued : pending_shots)
+			shots->spawn(queued.first, queued.second);
+		pending_shots.clear();
 
 		for (auto entity : entities) {
 			entity->age += delta;

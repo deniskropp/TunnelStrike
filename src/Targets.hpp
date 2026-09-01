@@ -15,6 +15,7 @@ namespace TunnelStrike {
 		friend class Main;
 		friend class Shots;
 		friend class Archive;
+		friend class World;
 
 	private:
 		std::list<std::shared_ptr<Target>> targets;

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "geometry/vector3d.hpp"
+#include "sfml_compat.hpp"
 
 #include "Target.hpp"
 
@@ -15,11 +16,13 @@ namespace TunnelStrike {
 	{
 	private:
 		Vector3d pos;
+		Vector3d last;
 		Vector3d dir;
-		sf::Clock clock;
 
 	public:
 		Shot(const Vector3d& pos, const Vector3d& dir);
+
+		void Tick(sf::Time delta);
 
 		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 
@@ -27,17 +30,17 @@ namespace TunnelStrike {
 
 		std::shared_ptr<Target> hitTarget(std::list<std::shared_ptr<Target>> targets) const;
 
-		Vector3d GetCenter() const { return pos; }
+		Vector3d GetCenter() const { return position(); }
 
 		friend std::ostream& operator << (std::ostream& os, const Shot& shot)
 		{
-			os << shot.position(shot.clock.getElapsedTime());
+			os << shot.position();
 
 			return os;
 		}
 
 	private:
-		Vector3d position(sf::Time time) const;
+		Vector3d position() const;
 	};
 
 

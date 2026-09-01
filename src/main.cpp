@@ -103,7 +103,7 @@ namespace TunnelStrike
 			dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), tc.x / 4.0f);
 			dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -tc.y / 4.0f);
 
-			world.shots->shots.push_back(std::make_shared<Shot>(pos, dir));
+			world.fire(pos, dir);
 
 			Sfx::instance().PlayShot();
 		}
