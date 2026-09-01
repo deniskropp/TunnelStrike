@@ -22,12 +22,28 @@ namespace TunnelStrike {
 		float cr = 0.4f;
 		float cg = 1.0f;
 		float cb = 0.6f;
+		int limbs = 5;
+		float limb_len = 1.0f;
+		float fork = 0.2f;
+		float twist = 0.0f;
+
+		int limbCount() const { return std::max(3, std::min(8, limbs)); }
+
+		bool forked() const { return fork > 0.35f; }
+
+		int ribCount() const { return std::clamp(morph_segments / 20, 0, 3); }
+
+		int bodySegmentCount() const
+		{
+			return limbCount() * (1 + (forked() ? 1 : 0) + ribCount());
+		}
 
 		static Genome random(std::mt19937 &rng)
 		{
 			std::uniform_real_distribution<float> unit(0.0f, 1.0f);
 			std::uniform_real_distribution<float> signed_v(-0.5f, 0.5f);
 			std::uniform_int_distribution<int> segs(16, 56);
+			std::uniform_int_distribution<int> limb_n(3, 8);
 
 			Genome g;
 			g.vx = signed_v(rng);
@@ -40,6 +56,10 @@ namespace TunnelStrike {
 			g.cr = unit(rng);
 			g.cg = 0.4f + unit(rng) * 0.6f;
 			g.cb = unit(rng);
+			g.limbs = limb_n(rng);
+			g.limb_len = 0.55f + unit(rng) * 1.35f;
+			g.fork = unit(rng);
+			g.twist = unit(rng) * 6.28318530718f;
 			return g;
 		}
 
@@ -69,6 +89,14 @@ namespace TunnelStrike {
 					g.morph_segments + static_cast<int>(noise(rng) * 6.0f),
 					8, 72);
 			}
+			if (unit(rng) < rate) {
+				g.limbs = std::clamp(
+					g.limbs + static_cast<int>(noise(rng) * 2.0f),
+					3, 8);
+			}
+			nudge(g.limb_len, 0.18f, 0.35f, 2.2f);
+			nudge(g.fork, 0.12f, 0.0f, 1.0f);
+			nudge(g.twist, 0.35f, 0.0f, 6.28318530718f);
 			return g;
 		}
 
@@ -86,6 +114,10 @@ namespace TunnelStrike {
 			g.cr = (a.cr + b.cr) * 0.5f;
 			g.cg = (a.cg + b.cg) * 0.5f;
 			g.cb = (a.cb + b.cb) * 0.5f;
+			g.limbs = unit(rng) < 0.5f ? a.limbs : b.limbs;
+			g.limb_len = (a.limb_len + b.limb_len) * 0.5f;
+			g.fork = unit(rng) < 0.5f ? a.fork : b.fork;
+			g.twist = (a.twist + b.twist) * 0.5f;
 			return g;
 		}
 
@@ -102,7 +134,8 @@ namespace TunnelStrike {
 			std::ostringstream os;
 			os << vx << ' ' << vy << ' ' << jitter << ' ' << speed << ' '
 			   << size << ' ' << morph_spread << ' ' << morph_segments << ' '
-			   << cr << ' ' << cg << ' ' << cb;
+			   << cr << ' ' << cg << ' ' << cb << ' '
+			   << limbs << ' ' << limb_len << ' ' << fork << ' ' << twist;
 			return os.str();
 		}
 
@@ -113,6 +146,17 @@ namespace TunnelStrike {
 			is >> g.vx >> g.vy >> g.jitter >> g.speed
 			   >> g.size >> g.morph_spread >> g.morph_segments
 			   >> g.cr >> g.cg >> g.cb;
+
+			int parsed_limbs = 0;
+			float parsed_len = 0.0f;
+			float parsed_fork = 0.0f;
+			float parsed_twist = 0.0f;
+			if (is >> parsed_limbs >> parsed_len >> parsed_fork >> parsed_twist) {
+				g.limbs = parsed_limbs;
+				g.limb_len = parsed_len;
+				g.fork = parsed_fork;
+				g.twist = parsed_twist;
+			}
 			return g;
 		}
 	};

@@ -29,6 +29,11 @@ namespace TunnelStrike {
 		pending_shots.emplace_back(pos, dir);
 	}
 
+	void World::recordFitness(const Genome &genome, float base)
+	{
+		population.record(genome, base + archive.assessmentBonus(genome));
+	}
+
 	std::vector<Vector3d> World::liveTargetCenters() const
 	{
 		std::vector<Vector3d> out;

@@ -20,16 +20,42 @@ void Target::generate()
 {
 	segments.clear();
 
-	const int n = std::max(8, genome_.morph_segments);
-	const float spread = genome_.morph_spread;
+	const int n = genome_.limbCount();
+	const float len = genome_.size * std::max(0.35f, genome_.limb_len);
+	const bool forked = genome_.forked();
+	const int ribs = genome_.ribCount();
+	const float two_pi = 6.28318530718f;
 
-	for (int i = 0; i < n; i++) {
-		const float ox = static_cast<float>(fmod((::rand() % 1001 - 500), spread));
-		const float oy = static_cast<float>(fmod((::rand() % 1001 - 500), spread));
-		segments.push_back(Segment3d(
-			Vector3d(center.x, center.y, center.z),
-			Vector3d(center.x - ox, center.y - oy, center.z),
-			color, color));
+	for (int i = 0; i < n; ++i) {
+		const float ang = genome_.twist + two_pi * static_cast<float>(i) / static_cast<float>(n);
+		const float ca = std::cos(ang);
+		const float sa = std::sin(ang);
+		const Vector3d tip(center.x + ca * len, center.y + sa * len, center.z);
+		segments.push_back(Segment3d(center, tip, color, color));
+
+		if (forked) {
+			const float fang = ang + genome_.fork * 1.2f;
+			const Vector3d ftip(
+				tip.x + std::cos(fang) * len * 0.45,
+				tip.y + std::sin(fang) * len * 0.45,
+				center.z);
+			segments.push_back(Segment3d(tip, ftip, color, color));
+		}
+
+		for (int r = 1; r <= ribs; ++r) {
+			const float t = static_cast<float>(r) / static_cast<float>(ribs + 1);
+			const Vector3d along(
+				center.x + (tip.x - center.x) * t,
+				center.y + (tip.y - center.y) * t,
+				center.z);
+			const float pang = ang + 1.57079632679f;
+			const float off = genome_.morph_spread * 0.35f * ((r % 2) ? 1.0f : -1.0f);
+			const Vector3d rib(
+				along.x + std::cos(pang) * off,
+				along.y + std::sin(pang) * off,
+				center.z);
+			segments.push_back(Segment3d(along, rib, color, color));
+		}
 	}
 }
 

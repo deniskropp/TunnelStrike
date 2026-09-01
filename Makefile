@@ -2,7 +2,8 @@ all: TunnelStrike
 
 CXXFLAGS += \
 	-std=c++17	\
-	-O2 -g2
+	-O2 -g2	\
+	-MMD -MP
 
 CPPFLAGS = \
 	-Isrc	\
@@ -50,7 +51,10 @@ sim: TunnelStrike-sim
 
 objs/%.o: src/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $+
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+
+-include $(GAME_OBJECTS:.o=.d)
+-include objs/sim_headless.d
 
 clean:
-	$(RM) TunnelStrike TunnelStrike-sim $(GAME_OBJECTS) objs/sim_headless.o
+	$(RM) TunnelStrike TunnelStrike-sim $(GAME_OBJECTS) objs/sim_headless.o $(GAME_OBJECTS:.o=.d) objs/sim_headless.d

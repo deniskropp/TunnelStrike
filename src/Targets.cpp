@@ -20,7 +20,7 @@ namespace TunnelStrike {
 
 		for (auto t : targets) {
 			if (t->GetCenter().get_z() <= Camera3d::instance().center().get_z()) {
-				world.evo().record(t->genome(), t->fitnessIfSurvived());
+				world.recordFitness(t->genome(), t->fitnessIfSurvived());
 				continue;
 			}
 

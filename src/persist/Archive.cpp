@@ -1,6 +1,7 @@
 #include "persist/Archive.hpp"
 
 #include <fstream>
+#include <sstream>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -19,6 +20,63 @@ namespace TunnelStrike {
 		: dir(dir)
 	{
 		ensureDir();
+		loadAssessments();
+	}
+
+	void Archive::loadAssessments()
+	{
+		assessments.clear();
+		std::ifstream file(assessPath());
+		if (!file)
+			return;
+
+		std::string line;
+		while (std::getline(file, line)) {
+			if (line.empty() || line[0] == '#')
+				continue;
+
+			std::istringstream is(line);
+			std::string first;
+			if (!(is >> first))
+				continue;
+
+			if (first == "*") {
+				float bonus = 0.0f;
+				if (!(is >> bonus))
+					continue;
+				assessments.push_back({true, bonus, {}});
+				continue;
+			}
+
+			float bonus = 0.0f;
+			try {
+				bonus = std::stof(first);
+			} catch (...) {
+				continue;
+			}
+
+			std::string rest;
+			std::getline(is, rest);
+			if (!rest.empty() && rest[0] == ' ')
+				rest.erase(0, 1);
+			if (rest.empty())
+				continue;
+
+			assessments.push_back({false, bonus, rest});
+		}
+	}
+
+	float Archive::assessmentBonus(const Genome &g) const
+	{
+		float bonus = 0.0f;
+		const std::string line = g.toLine();
+		for (const auto &a : assessments) {
+			if (a.wildcard)
+				bonus += a.bonus;
+			else if (a.genome_line == line)
+				bonus += a.bonus;
+		}
+		return bonus;
 	}
 
 	void Archive::ensureDir() const

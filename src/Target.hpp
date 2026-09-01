@@ -27,6 +27,8 @@ namespace TunnelStrike {
 
 		void Act(sf::Time delta);
 
+		int bodySegmentCount() const { return static_cast<int>(segments.size()); }
+
 		float livedSeconds() const { return lived; }
 
 		float fitnessIfKilled() const { return lived * 0.35f; }

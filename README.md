@@ -21,7 +21,8 @@
 
 ### Evolving creatures
     GA based logic controlling motion depending on position relative to player, bullets...
-    Appearance or structure of the bodies evolving based upon survival or human assessment
+    Appearance / limb structure evolving from survival fitness (heritable `limbs`, `limb_len`, `fork`, `twist`)
+    Optional human assessment overlay: `evo/assess.txt` (`* <bonus>` or `<bonus> <genome line>`)
 
 ### Simulation decoupled from display
     Even with low FPS the bullets and creatures do well behave

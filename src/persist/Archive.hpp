@@ -19,14 +19,25 @@ namespace TunnelStrike {
 		void appendGeneration(unsigned generation, float best_fitness, const std::vector<Genome> &pool);
 		void snapshotWorld(const World &world, const Population &population, unsigned long long tick);
 		bool loadLatestPool(std::vector<Genome> &out) const;
+		float assessmentBonus(const Genome &g) const;
 
 		const std::string &directory() const { return dir; }
 
 	private:
+		struct Assessment {
+			bool wildcard = false;
+			float bonus = 0.0f;
+			std::string genome_line;
+		};
+
+		void loadAssessments();
+
 		std::string dir;
+		std::vector<Assessment> assessments;
 		std::string journalPath() const { return dir + "/generation.jsonl"; }
 		std::string snapshotPath() const { return dir + "/snapshot.txt"; }
 		std::string poolPath() const { return dir + "/pool.txt"; }
+		std::string assessPath() const { return dir + "/assess.txt"; }
 	};
 
 }

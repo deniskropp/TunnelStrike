@@ -28,7 +28,7 @@ namespace TunnelStrike {
 			if (target) {
 				Sfx::instance().PlayHit();
 
-				world.evo().record(target->genome(), target->fitnessIfKilled());
+				world.recordFitness(target->genome(), target->fitnessIfKilled());
 
 				for (auto it = world.targets->targets.begin(); it != world.targets->targets.end(); it++) {
 					if (*it == target) {
