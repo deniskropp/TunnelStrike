@@ -1,4 +1,5 @@
 #include "plane3d.hpp"
+#include <cstdint>
 
 namespace TunnelStrike {
 

@@ -44,7 +44,7 @@ namespace TunnelStrike {
 		}
 	}
 
-	void Targets::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
+	void Targets::draw(sf::RenderTarget& target, DrawStates states) const
 	{
 		for (auto t : targets)
 			target.draw(*t);

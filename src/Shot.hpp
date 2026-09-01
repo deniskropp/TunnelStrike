@@ -21,7 +21,7 @@ namespace TunnelStrike {
 	public:
 		Shot(const Vector3d& pos, const Vector3d& dir);
 
-		virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
+		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 
 		bool outsideWalls() const;
 

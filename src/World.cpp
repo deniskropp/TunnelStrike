@@ -45,7 +45,7 @@ namespace TunnelStrike {
 			archive.snapshotWorld(*this, population, ticks);
 	}
 
-	void World::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
+	void World::draw(sf::RenderTarget& target, DrawStates states) const
 	{
 		for (auto entity : entities)
 			entity->draw(target, states);

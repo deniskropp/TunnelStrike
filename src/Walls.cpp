@@ -59,7 +59,7 @@ namespace TunnelStrike
 		}
 	}
 
-	void Walls::draw(sf::RenderTarget &target, const sf::RenderStates &states) const
+	void Walls::draw(sf::RenderTarget &target, DrawStates states) const
 	{
 		sf::RenderStates s(states);
 

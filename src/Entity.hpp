@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "sfml_compat.hpp"
 
 
 namespace TunnelStrike {
