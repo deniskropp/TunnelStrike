@@ -14,18 +14,74 @@ namespace TunnelStrike {
 		constexpr float PI = 3.14159265358979323846f;
 		constexpr float AIM_LIMIT = 70.0f;
 		constexpr float SHOT_SPEED = 1000.0f;
+		constexpr double TUNNEL = 9.0;
+		constexpr double TUNNEL_BOUND = 8.85;
 
 		float rad2deg(float r)
 		{
 			return r * 180.0f / PI;
 		}
 
-		Vector3d dirFromAim(float ax, float ay)
+		bool inTunnelXY(const Vector3d &p, double pad = TUNNEL)
 		{
-			Vector3d dir(0, 0, 100);
-			dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), ax / 4.0f);
-			dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -ay / 4.0f);
-			return dir;
+			return std::abs(p.x) <= pad && std::abs(p.y) <= pad;
+		}
+
+		Vector3d clampTunnel(const Vector3d &p, double bound = TUNNEL_BOUND)
+		{
+			Vector3d c = p;
+			c.x = std::clamp(c.x, -bound, bound);
+			c.y = std::clamp(c.y, -bound, bound);
+			return c;
+		}
+
+		double bounceCoord(double pos, double vel, double t, double bound = TUNNEL_BOUND)
+		{
+			const double raw = pos + vel * t;
+			const double period = 4.0 * bound;
+			double shifted = std::fmod(raw + bound, period);
+			if (shifted < 0.0)
+				shifted += period;
+			if (shifted <= 2.0 * bound)
+				return shifted - bound;
+			else
+				return 3.0 * bound - shifted;
+		}
+
+		Vector3d dirTo(const Vector3d &from, const Vector3d &to)
+		{
+			Vector3d d = to - from;
+			const double n = d.norm();
+			if (n < 1e-6)
+				return Vector3d(0, 0, 100);
+			d *= 100.0 / n;
+			return d;
+		}
+
+		Vector3d interceptPoint(const Vector3d &muzzle, const Vector3d &pos, const Vector3d &vel, float lead)
+		{
+			const Vector3d D = pos - muzzle;
+			const double dv = D.x * vel.x + D.y * vel.y;
+			const double v2 = vel.x * vel.x + vel.y * vel.y;
+			const double s2 = SHOT_SPEED * SHOT_SPEED;
+			const double denom = s2 - v2;
+			double t = 0.0;
+			if (denom > 1e-6) {
+				const double d2 = D * D;
+				const double disc = dv * dv + denom * d2;
+				if (disc >= 0.0) {
+					t = (dv + std::sqrt(disc)) / denom;
+				}
+			}
+			if (t <= 0.0) {
+				t = D.norm() / SHOT_SPEED;
+			}
+
+			t *= static_cast<double>(lead);
+
+			const double ix = bounceCoord(pos.x, vel.x, t);
+			const double iy = bounceCoord(pos.y, vel.y, t);
+			return Vector3d(ix, iy, pos.z);
 		}
 
 		double pointRayDist(const Vector3d &origin, const Vector3d &dir, const Vector3d &p)
@@ -71,7 +127,7 @@ namespace TunnelStrike {
 					lock_i = i;
 				}
 			}
-			if (lock_d > 14.0f)
+			if (lock_d > 16.0f)
 				lock_i = -1;
 		}
 
@@ -81,28 +137,31 @@ namespace TunnelStrike {
 			const auto &t = sights[static_cast<size_t>(i)];
 			const Vector3d rel = t.pos - muzzle;
 			const float dist = static_cast<float>(rel.norm());
-			if (rel.z < 8.0 || dist < 4.0f || dist > current.max_dist)
+			if (rel.z < 6.0 || dist < 3.0f || dist > current.max_dist)
 				continue;
 
 			const float zclose = 1.0f / (1.0f + static_cast<float>(rel.z) * 0.004f);
-			const float aligned = 1.0f / (1.0f + static_cast<float>(std::abs(rel.x) + std::abs(rel.y)) * 0.12f);
-			const float bulky = t.size / 7.0f;
+			const float aligned = 1.0f / (1.0f + static_cast<float>(std::hypot(rel.x, rel.y)) * 0.12f);
+			const float bulky = t.size / 6.0f;
+			const float urgency = rel.z < 60.0 ? (60.0f - static_cast<float>(rel.z)) * 0.02f : 0.0f;
+
 			float score = current.prefer_close * zclose
 				+ (1.0f - current.prefer_close) * aligned
-				+ current.prefer_size * bulky;
+				+ current.prefer_size * bulky
+				+ urgency;
 			if (i == lock_i)
-				score += current.stick * 1.8f;
+				score += current.stick * 2.0f;
 			if (score > best) {
 				best = score;
 				best_i = i;
 			}
 		}
 
-		if (lock_i >= 0 && current.stick >= 0.45f) {
+		if (lock_i >= 0 && current.stick >= 0.40f) {
 			const auto &locked = sights[static_cast<size_t>(lock_i)];
 			const Vector3d rel = locked.pos - muzzle;
 			const float dist = static_cast<float>(rel.norm());
-			if (rel.z >= 8.0 && dist >= 4.0f && dist <= current.max_dist * 1.1f)
+			if (rel.z >= 6.0 && dist >= 3.0f && dist <= current.max_dist * 1.15f)
 				best_i = lock_i;
 		}
 
@@ -126,9 +185,14 @@ namespace TunnelStrike {
 			? static_cast<float>(episode_kills) / static_cast<float>(episode_shots)
 			: 0.0f;
 		const int wasted = std::max(0, episode_shots - episode_kills);
-		float fitness = episode_kills * 10.0f + acc * 8.0f - wasted * 0.08f - episode_misses * 0.2f;
-		if (episode_had_target && episode_shots == 0)
-			fitness -= 1.5f;
+		float fitness = episode_kills * 10.0f
+			+ acc * 8.0f
+			- wasted * 0.05f
+			- episode_misses * 0.35f
+			+ episode_long_range_kills * 1.5f;
+
+		if (episode_had_target > 20 && episode_shots == 0)
+			fitness -= 2.0f;
 
 		pop.record(current, fitness);
 		if (pop.maybeEvolve()) {
@@ -146,6 +210,7 @@ namespace TunnelStrike {
 		episode_misses = 0;
 		episode_shots = 0;
 		episode_had_target = 0;
+		episode_long_range_kills = 0.0f;
 		have_lock = false;
 	}
 
@@ -158,7 +223,8 @@ namespace TunnelStrike {
 			cooldown -= seconds;
 
 		if (world.get_kills() > seen_kills) {
-			episode_kills += static_cast<int>(world.get_kills() - seen_kills);
+			const unsigned new_kills = world.get_kills() - seen_kills;
+			episode_kills += static_cast<int>(new_kills);
 			seen_kills = world.get_kills();
 			have_lock = false;
 		}
@@ -181,54 +247,58 @@ namespace TunnelStrike {
 		float want_x = 0.0f;
 		float want_y = 0.0f;
 		Vector3d aim_at = target;
+		bool intercept_ok = false;
 
 		if (have) {
-			const float dist = static_cast<float>((target - muzzle).norm());
-			const float t_hit = dist / SHOT_SPEED;
-			aim_at = target + vel * (t_hit * current.lead);
+			aim_at = interceptPoint(muzzle, target, vel, current.lead);
+			intercept_ok = inTunnelXY(aim_at, TUNNEL_BOUND + 0.5);
 
 			const Vector3d rel = aim_at - muzzle;
-			const float horiz = static_cast<float>(std::sqrt(rel.x * rel.x + rel.z * rel.z));
+			const float horiz = static_cast<float>(std::hypot(rel.x, rel.z));
 			want_x = rad2deg(static_cast<float>(std::atan2(rel.x, rel.z))) * 4.0f;
 			want_y = rad2deg(static_cast<float>(std::atan2(rel.y, std::max(horiz, 0.1f)))) * 4.0f;
 		} else {
 			want_x = current.yaw_bias * 8.0f
-				+ std::sin(clock * (0.7f + current.wander)) * current.wander * 22.0f;
+				+ std::sin(clock * (0.8f + current.wander * 1.5f)) * current.wander * 28.0f;
 			want_y = current.pitch_bias * 8.0f
-				+ std::cos(clock * (0.45f + current.wander * 0.6f)) * current.wander * 14.0f;
+				+ std::cos(clock * (0.5f + current.wander * 1.2f)) * current.wander * 18.0f;
 		}
 
 		std::uniform_real_distribution<float> unit(0.0f, 1.0f);
-		const bool settling = have && current.jitter > 0.0f && unit(rng) < current.jitter * 0.35f;
 		if (!have && unit(rng) < current.jitter) {
 			want_x += (unit(rng) - 0.5f) * 8.0f;
 			want_y += (unit(rng) - 0.5f) * 8.0f;
-		} else if (settling) {
-			want_x += (unit(rng) - 0.5f) * 2.0f;
-			want_y += (unit(rng) - 0.5f) * 2.0f;
 		}
 
-		const float a = have ? std::max(current.smooth, 0.35f) : current.smooth;
-		aim_x = aim_x * (1.0f - a) + want_x * a;
-		aim_y = aim_y * (1.0f - a) + want_y * a;
+		const float slew_rate = have ? (8.0f + current.smooth * 18.0f) : (4.0f + current.smooth * 10.0f);
+		const float alpha = std::clamp(1.0f - std::exp(-slew_rate * seconds), 0.05f, 1.0f);
+		aim_x = aim_x + (want_x - aim_x) * alpha;
+		aim_y = aim_y + (want_y - aim_y) * alpha;
 		aim_x = std::clamp(aim_x, -AIM_LIMIT, AIM_LIMIT);
 		aim_y = std::clamp(aim_y, -AIM_LIMIT, AIM_LIMIT);
 
-		if (!have || cooldown > 0.0f)
+		if (!have || cooldown > 0.0f || !intercept_ok)
 			return false;
 
-		const Vector3d shot_dir = dirFromAim(aim_x, aim_y);
-		const double miss = pointRayDist(muzzle, shot_dir, aim_at);
+		Vector3d barrel(0, 0, 100);
+		barrel.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), aim_x / 4.0f);
+		barrel.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -aim_y / 4.0f);
+
 		const double radius = 1.35 + static_cast<double>(size) * 0.42;
-		const double slack = radius * (1.85 - 0.7 * static_cast<double>(current.trigger));
-		const bool fire = miss < slack;
+		const double slack = radius * (1.70 - 0.85 * static_cast<double>(current.trigger));
+		const double dist_lead = pointRayDist(muzzle, barrel, aim_at);
+		const double dist_body = pointRayDist(muzzle, barrel, target);
+		const bool on_lead = dist_lead < slack;
+		const bool on_body = dist_body < slack * 1.25;
+		if (!on_lead && !on_body)
+			return false;
 
-		if (fire) {
-			cooldown = current.fire_gap;
-			++episode_shots;
-		}
-
-		return fire;
+		fire_dir = barrel;
+		cooldown = current.fire_gap;
+		++episode_shots;
+		if (target.z - muzzle.z > 150.0)
+			episode_long_range_kills += 1.0f;
+		return true;
 	}
 
 }

@@ -223,10 +223,13 @@ namespace TunnelStrike
 			if (self_run && mind) {
 				const float before_x = aimx;
 				const float before_y = aimy;
-				if (mind->step(step, world, aimx, aimy))
-					Shoot();
+				if (mind->step(step, world, aimx, aimy)) {
+					Vector3d pos(0, 0, Camera3d::instance().center().get_z());
+					world.fire(pos, mind->fireDir());
+					Sfx::instance().PlayShot();
+				}
 				Camera3d::instance().rotate(aimx - before_x, aimy - before_y);
-				Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
+				Camera3d::instance().translate(Vector3d(0, 0, 1.4f));
 				return;
 			}
 
@@ -253,7 +256,7 @@ namespace TunnelStrike
 				Camera3d::instance().rotate((float)dx, (float)dy);
 			}
 
-			Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
+			Camera3d::instance().translate(Vector3d(0, 0, 1.4f));
 
 			if (!assist_cooldown)
 			{
@@ -332,17 +335,17 @@ namespace TunnelStrike
 		const unsigned loaded_pilot = mind ? mind->generation() : 0;
 
 		for (int i = 0; i < ticks; ++i) {
-			Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
+			Camera3d::instance().translate(Vector3d(0, 0, 0.4f));
 
 			if (mind) {
 				const sf::Time step = clock.step();
+				const float before_x = aimx;
+				const float before_y = aimy;
 				if (mind->step(step, world, aimx, aimy)) {
 					Vector3d pos(0, 0, Camera3d::instance().center().get_z());
-					Vector3d dir(0, 0, 100);
-					dir.rotate(Vector3d(0, 0, 0), Vector3d(0, 1, 0), aimx / 4.0f);
-					dir.rotate(Vector3d(0, 0, 0), Vector3d(1, 0, 0), -aimy / 4.0f);
-					world.fire(pos, dir);
+					world.fire(pos, mind->fireDir());
 				}
+				Camera3d::instance().rotate(aimx - before_x, aimy - before_y);
 				world.Tick(step);
 			} else {
 				if (i % 20 == 0) {

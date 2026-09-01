@@ -28,14 +28,14 @@ namespace TunnelStrike {
 		void clamp()
 		{
 			lead = std::clamp(lead, 0.2f, 1.8f);
-			smooth = std::clamp(smooth, 0.2f, 1.0f);
+			smooth = std::clamp(smooth, 0.15f, 1.0f);
 			jitter = std::clamp(jitter, 0.0f, 0.08f);
 			fire_gap = std::clamp(fire_gap, 0.15f, 0.7f);
 			max_dist = std::clamp(max_dist, 120.0f, 780.0f);
 			prefer_close = std::clamp(prefer_close, 0.0f, 1.0f);
 			prefer_size = std::clamp(prefer_size, 0.0f, 1.0f);
 			wander = std::clamp(wander, 0.0f, 0.5f);
-			trigger = std::clamp(trigger, 0.2f, 0.9f);
+			trigger = std::clamp(trigger, 0.15f, 0.95f);
 			yaw_bias = std::clamp(yaw_bias, -0.5f, 0.5f);
 			pitch_bias = std::clamp(pitch_bias, -0.5f, 0.5f);
 			stick = std::clamp(stick, 0.2f, 0.95f);
@@ -47,7 +47,8 @@ namespace TunnelStrike {
 			return d(lead, o.lead) + d(smooth, o.smooth) + d(trigger, o.trigger)
 				+ d(prefer_close, o.prefer_close) + d(fire_gap, o.fire_gap)
 				+ d(max_dist, o.max_dist) * 0.002f + d(wander, o.wander)
-				+ d(stick, o.stick);
+				+ d(stick, o.stick) + d(prefer_size, o.prefer_size)
+				+ d(yaw_bias, o.yaw_bias) + d(pitch_bias, o.pitch_bias);
 		}
 
 		static Pilot random(std::mt19937 &rng)
@@ -81,14 +82,14 @@ namespace TunnelStrike {
 					v = std::clamp(v + noise(rng) * sigma, lo, hi);
 			};
 			nudge(p.lead, 0.12f, 0.2f, 1.8f);
-			nudge(p.smooth, 0.08f, 0.2f, 1.0f);
+			nudge(p.smooth, 0.08f, 0.15f, 1.0f);
 			nudge(p.jitter, 0.01f, 0.0f, 0.08f);
 			nudge(p.fire_gap, 0.05f, 0.15f, 0.7f);
 			nudge(p.max_dist, 40.0f, 120.0f, 780.0f);
 			nudge(p.prefer_close, 0.1f, 0.0f, 1.0f);
 			nudge(p.prefer_size, 0.1f, 0.0f, 1.0f);
 			nudge(p.wander, 0.05f, 0.0f, 0.5f);
-			nudge(p.trigger, 0.08f, 0.2f, 0.9f);
+			nudge(p.trigger, 0.08f, 0.15f, 0.95f);
 			nudge(p.yaw_bias, 0.06f, -0.5f, 0.5f);
 			nudge(p.pitch_bias, 0.06f, -0.5f, 0.5f);
 			nudge(p.stick, 0.08f, 0.2f, 0.95f);
@@ -100,7 +101,7 @@ namespace TunnelStrike {
 		{
 			std::uniform_real_distribution<float> unit(0.0f, 1.0f);
 			Pilot p;
-			p.lead = (a.lead + b.lead) * 0.5f;
+			p.lead = (unit(rng) < 0.5f) ? (a.lead + b.lead) * 0.5f : (unit(rng) < 0.5f ? a.lead : b.lead);
 			p.smooth = unit(rng) < 0.5f ? a.smooth : b.smooth;
 			p.jitter = unit(rng) < 0.5f ? a.jitter : b.jitter;
 			p.fire_gap = (a.fire_gap + b.fire_gap) * 0.5f;
@@ -108,7 +109,7 @@ namespace TunnelStrike {
 			p.prefer_close = (a.prefer_close + b.prefer_close) * 0.5f;
 			p.prefer_size = unit(rng) < 0.5f ? a.prefer_size : b.prefer_size;
 			p.wander = unit(rng) < 0.5f ? a.wander : b.wander;
-			p.trigger = (a.trigger + b.trigger) * 0.5f;
+			p.trigger = (unit(rng) < 0.5f) ? (a.trigger + b.trigger) * 0.5f : (unit(rng) < 0.5f ? a.trigger : b.trigger);
 			p.yaw_bias = unit(rng) < 0.5f ? a.yaw_bias : b.yaw_bias;
 			p.pitch_bias = unit(rng) < 0.5f ? a.pitch_bias : b.pitch_bias;
 			p.stick = (a.stick + b.stick) * 0.5f;
@@ -158,13 +159,14 @@ namespace TunnelStrike {
 			if (genomes.empty())
 				refill();
 			std::uniform_real_distribution<float> unit(0.0f, 1.0f);
-			if (unit(rng) < 0.6f && !genomes.empty()) {
-				std::uniform_int_distribution<unsigned> elite(0, std::min(3u, static_cast<unsigned>(genomes.size()) - 1));
-				return genomes[elite(rng)].mutated(rng, 0.07f);
+			if (unit(rng) < 0.60f && !genomes.empty()) {
+				const unsigned max_elite = std::min(3u, static_cast<unsigned>(genomes.size()) - 1);
+				std::uniform_int_distribution<unsigned> elite(0, max_elite);
+				return genomes[elite(rng)].mutated(rng, 0.06f);
 			}
 			Pilot g = genomes[cursor % genomes.size()];
 			++cursor;
-			return g.mutated(rng, 0.12f);
+			return g.mutated(rng, 0.10f);
 		}
 
 		void record(const Pilot &pilot, float fitness)
@@ -216,7 +218,9 @@ namespace TunnelStrike {
 			size_t best_i = pick(rng);
 			for (int n = 0; n < 3; ++n) {
 				const size_t i = pick(rng);
-				if (scored[i].second > scored[best_i].second)
+				const float fi = i < pick_fit.size() ? pick_fit[i] : scored[i].second;
+				const float fb = best_i < pick_fit.size() ? pick_fit[best_i] : scored[best_i].second;
+				if (fi > fb)
 					best_i = i;
 			}
 			return scored[best_i].first;
@@ -233,51 +237,74 @@ namespace TunnelStrike {
 				sum += s.second;
 			last_mean = sum / static_cast<float>(scored.size());
 
+			pick_fit.resize(scored.size());
+			for (size_t i = 0; i < scored.size(); ++i) {
+				float share = 1.0f;
+				for (size_t j = 0; j < i; ++j) {
+					if (scored[i].first.geneDistance(scored[j].first) < 0.45f)
+						share *= 0.75f;
+				}
+				pick_fit[i] = scored[i].second * share;
+			}
+
 			std::vector<Pilot> next;
 			next.reserve(POOL_SIZE);
 			next.push_back(scored[0].first);
 			if (scored.size() > 1)
 				next.push_back(scored[1].first);
-			next.push_back(scored[0].first.mutated(rng, 0.08f));
+			next.push_back(scored[0].first.mutated(rng, 0.06f));
+			if (scored.size() > 1)
+				next.push_back(scored[1].first.mutated(rng, 0.06f));
 
+			const float mut = 0.08f + 0.16f / (1.0f + last_diversity * 4.0f);
 			const unsigned parent_n = std::min<unsigned>(
 				static_cast<unsigned>(scored.size()),
 				std::max(4u, static_cast<unsigned>(scored.size() * 3 / 4)));
-			const unsigned immigrants = last_diversity < 0.2f ? 3u : 2u;
+			const unsigned immigrants = last_diversity < 0.18f ? 3u : 2u;
 
 			while (next.size() + immigrants < POOL_SIZE) {
 				const Pilot &a = tournamentPick(parent_n);
 				const Pilot &b = tournamentPick(parent_n);
-				next.push_back(Pilot::crossover(a, b, rng).mutated(rng));
+				next.push_back(Pilot::crossover(a, b, rng).mutated(rng, mut));
 			}
 			while (next.size() < POOL_SIZE)
 				next.push_back(Pilot::random(rng));
 
 			float mean_lead = 0.0f;
 			float mean_trig = 0.0f;
+			float mean_smooth = 0.0f;
+			float mean_gap = 0.0f;
 			for (const auto &g : next) {
 				mean_lead += g.lead;
 				mean_trig += g.trigger;
+				mean_smooth += g.smooth;
+				mean_gap += g.fire_gap;
 			}
 			const float n = static_cast<float>(next.size());
 			mean_lead /= n;
 			mean_trig /= n;
+			mean_smooth /= n;
+			mean_gap /= n;
 			float var = 0.0f;
 			for (const auto &g : next) {
 				const float dl = g.lead - mean_lead;
 				const float dt = g.trigger - mean_trig;
-				var += dl * dl + dt * dt;
+				const float ds = g.smooth - mean_smooth;
+				const float dg = (g.fire_gap - mean_gap) * 2.0f;
+				var += dl * dl + dt * dt + ds * ds + dg * dg;
 			}
 			last_diversity = std::sqrt(var / n);
 
 			genomes.swap(next);
 			scored.clear();
+			pick_fit.clear();
 			cursor = 0;
 			++generation;
 		}
 
 		std::vector<Pilot> genomes;
 		std::vector<std::pair<Pilot, float>> scored;
+		std::vector<float> pick_fit;
 		unsigned generation = 0;
 		unsigned cursor = 0;
 		float last_best = 0.0f;

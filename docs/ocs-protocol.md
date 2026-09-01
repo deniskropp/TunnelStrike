@@ -75,6 +75,18 @@ Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 | P24 Persist pilot | done — `evo/pilot.txt` + `evo/pilot.jsonl` |
 | P25 Pilot intercept | done — sticky target, muzzle-origin aim, vel intercept, ray fire gate |
 
+## 2f. Executed slice (v0.7) — improved PilotMind
+
+| TAS | Status |
+|---|---|
+| P26 Closed-form intercept | done — quadratic time-of-flight solution + `lead` scale |
+| P27 Wall bounce reflection | done — continuous 1D folding inside tunnel boundaries `[-8.85, 8.85]` |
+| P28 True barrel ray gate | done — checks ray distance from current smoothed aim vector `(aim_x, aim_y)` |
+| P29 Frame-rate independent slew | done — exponential smoothing `1 - exp(-rate * dt)` |
+| P30 PilotPop niching & diversity | done — fitness sharing crowd discount + adaptive mutation rate |
+| P31 Enhanced fitness reward | done — long-range intercept reward, inaction penalty, accuracy scaling |
+| P32 Headless & windowed parity | done — consistent camera motion, rotation, and `mind->fireDir()` across modes |
+
 ## 3. Invariants
 
 - `World::Tick` is the only mutation edge for creatures, shots, evolution.

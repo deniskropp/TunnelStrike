@@ -21,11 +21,15 @@ namespace TunnelStrike {
 
 		bool step(sf::Time dt, World &world, float &aim_x, float &aim_y);
 
+		Vector3d fireDir() const { return fire_dir; }
+
 		unsigned generation() const { return pop.generationIndex(); }
 		unsigned scoredPending() const { return pop.scoredPending(); }
 		float lastBestFitness() const { return pop.lastBestFitness(); }
 		float lastMeanFitness() const { return pop.lastMeanFitness(); }
+		float lastDiversity() const { return pop.lastDiversity(); }
 		const Pilot &policy() const { return current; }
+		const PilotPop &population() const { return pop; }
 
 	private:
 		void endEpisode();
@@ -40,9 +44,11 @@ namespace TunnelStrike {
 		int episode_misses = 0;
 		int episode_shots = 0;
 		int episode_had_target = 0;
+		float episode_long_range_kills = 0.0f;
 		unsigned seen_kills = 0;
 		unsigned seen_misses = 0;
 		Vector3d lock_pos;
+		Vector3d fire_dir;
 		bool have_lock = false;
 		float clock = 0.0f;
 		std::mt19937 rng;

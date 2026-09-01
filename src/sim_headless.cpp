@@ -319,6 +319,8 @@ namespace {
 			return fail("pilot generation did not increment");
 		if (std::abs(p.pool().front().lead - champ.lead) > 1e-3f)
 			return fail("pilot elite was not cloned");
+		if (p.lastDiversity() <= 0.0f)
+			return fail("pilot diversity not calculated");
 
 		const std::string dir = "/tmp/tunnelstrike-pilot-verify";
 		{
