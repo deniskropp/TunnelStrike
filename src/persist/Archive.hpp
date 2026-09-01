@@ -16,9 +16,10 @@ namespace TunnelStrike {
 		explicit Archive(const std::string &dir = "evo");
 
 		void ensureDir() const;
-		void appendGeneration(unsigned generation, float best_fitness, const std::vector<Genome> &pool);
+		void appendGeneration(unsigned generation, float best_fitness, float mean_fitness,
+			float diversity, const std::vector<Genome> &pool);
 		void snapshotWorld(const World &world, const Population &population, unsigned long long tick);
-		bool loadLatestPool(std::vector<Genome> &out) const;
+		bool loadLatestPool(std::vector<Genome> &out, unsigned *generation = nullptr) const;
 		float assessmentBonus(const Genome &g) const;
 
 		const std::string &directory() const { return dir; }

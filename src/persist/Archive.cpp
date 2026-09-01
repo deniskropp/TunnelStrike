@@ -88,15 +88,22 @@ namespace TunnelStrike {
 #endif
 	}
 
-	void Archive::appendGeneration(unsigned generation, float best_fitness, const std::vector<Genome> &pool)
+	void Archive::appendGeneration(unsigned generation, float best_fitness, float mean_fitness,
+		float diversity, const std::vector<Genome> &pool)
 	{
 		ensureDir();
 		std::ofstream journal(journalPath(), std::ios::app);
 		journal << "{\"generation\":" << generation
 			<< ",\"best\":" << best_fitness
+			<< ",\"mean\":" << mean_fitness
+			<< ",\"diversity\":" << diversity
 			<< ",\"pool\":" << pool.size() << "}\n";
 
 		std::ofstream pool_file(poolPath(), std::ios::trunc);
+		pool_file << "# generation " << generation
+			<< " best " << best_fitness
+			<< " mean " << mean_fitness
+			<< " diversity " << diversity << '\n';
 		for (const auto &g : pool)
 			pool_file << g.toLine() << '\n';
 	}
@@ -109,6 +116,8 @@ namespace TunnelStrike {
 		file << "tick " << tick << '\n';
 		file << "generation " << population.generationIndex() << '\n';
 		file << "best " << population.lastBestFitness() << '\n';
+		file << "mean " << population.lastMeanFitness() << '\n';
+		file << "diversity " << population.lastDiversity() << '\n';
 		file << "kills " << world.get_kills() << '\n';
 		file << "camera "
 			<< Camera3d::instance().center().get_x() << ' '
@@ -126,7 +135,7 @@ namespace TunnelStrike {
 		}
 	}
 
-	bool Archive::loadLatestPool(std::vector<Genome> &out) const
+	bool Archive::loadLatestPool(std::vector<Genome> &out, unsigned *generation) const
 	{
 		std::ifstream file(poolPath());
 		if (!file)
@@ -137,6 +146,21 @@ namespace TunnelStrike {
 		while (std::getline(file, line)) {
 			if (line.empty())
 				continue;
+			if (line[0] == '#') {
+				if (generation) {
+					std::istringstream hs(line.substr(1));
+					std::string key;
+					while (hs >> key) {
+						if (key == "generation") {
+							unsigned g = 0;
+							if (hs >> g)
+								*generation = g;
+							break;
+						}
+					}
+				}
+				continue;
+			}
 			out.push_back(Genome::fromLine(line));
 		}
 		return !out.empty();

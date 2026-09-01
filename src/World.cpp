@@ -5,9 +5,10 @@
 namespace TunnelStrike {
 
 
-	World::World()
+	World::World(std::string evo_dir)
 		:
-		kills(0)
+		kills(0),
+		archive(std::move(evo_dir))
 	{
 		crosshair = std::make_unique<Crosshair>(*this);
 		shots = std::make_unique<Shots>(*this);
@@ -20,8 +21,9 @@ namespace TunnelStrike {
 		entities.push_back(targets.get());
 
 		std::vector<Genome> loaded;
-		if (archive.loadLatestPool(loaded))
-			population.seedFrom(loaded);
+		unsigned generation = 0;
+		if (archive.loadLatestPool(loaded, &generation))
+			population.seedFrom(loaded, generation);
 	}
 
 	void World::fire(const Vector3d &pos, const Vector3d &dir)
@@ -46,6 +48,18 @@ namespace TunnelStrike {
 		return out;
 	}
 
+	std::vector<Vector3d> World::liveShotPositions() const
+	{
+		std::vector<Vector3d> out;
+		if (!shots)
+			return out;
+
+		out.reserve(shots->shots.size());
+		for (const auto &s : shots->shots)
+			out.push_back(s->GetCenter());
+		return out;
+	}
+
 	void World::Tick(sf::Time delta)
 	{
 		++ticks;
@@ -64,6 +78,8 @@ namespace TunnelStrike {
 			archive.appendGeneration(
 				population.generationIndex(),
 				population.lastBestFitness(),
+				population.lastMeanFitness(),
+				population.lastDiversity(),
 				population.pool());
 		}
 

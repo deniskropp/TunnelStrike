@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 
+#include "evo/Population.hpp"
 #include "geometry/camera3d.hpp"
 #include "persist/Archive.hpp"
 #include "sim/SimClock.hpp"
@@ -12,6 +13,12 @@
 #include "World.hpp"
 
 namespace {
+
+	int fail(const char *msg)
+	{
+		std::cerr << "headless verify failed: " << msg << '\n';
+		return 1;
+	}
 
 	int verify_structure()
 	{
@@ -29,39 +36,36 @@ namespace {
 		const sf::Vector3f pos(0.f, 0.f, 100.f);
 		const Target a(pos, g);
 		const Target b(pos, g);
-		if (a.bodySegmentCount() != b.bodySegmentCount()) {
-			std::cerr << "headless verify failed: structure is not deterministic\n";
-			return 1;
-		}
-		if (a.bodySegmentCount() != g.bodySegmentCount()) {
-			std::cerr << "headless verify failed: target segments != genome formula\n";
-			return 1;
-		}
-		if (a.bodySegmentCount() < 4) {
-			std::cerr << "headless verify failed: structured body too small\n";
-			return 1;
-		}
+		if (a.bodySegmentCount() != b.bodySegmentCount())
+			return fail("structure is not deterministic");
+		if (a.bodySegmentCount() != g.bodySegmentCount())
+			return fail("target segments != genome formula");
+		if (a.bodySegmentCount() < 4)
+			return fail("structured body too small");
 
 		Genome g2 = g;
 		g2.limbs = 7;
 		const Target c(pos, g2);
-		if (c.bodySegmentCount() == a.bodySegmentCount()) {
-			std::cerr << "headless verify failed: limb gene does not change topology\n";
-			return 1;
-		}
+		if (c.bodySegmentCount() == a.bodySegmentCount())
+			return fail("limb gene does not change topology");
 
+		g.seek = -0.4f;
+		g.dodge = 1.1f;
+		g.reaction = 0.7f;
 		const Genome round = Genome::fromLine(g.toLine());
-		if (round.limbs != g.limbs || std::abs(round.fork - g.fork) > 1e-4f) {
-			std::cerr << "headless verify failed: genome roundtrip lost structure genes\n";
-			return 1;
-		}
+		if (round.limbs != g.limbs || std::abs(round.fork - g.fork) > 1e-4f)
+			return fail("genome roundtrip lost structure genes");
+		if (std::abs(round.seek - g.seek) > 1e-4f ||
+			std::abs(round.dodge - g.dodge) > 1e-4f ||
+			std::abs(round.reaction - g.reaction) > 1e-4f)
+			return fail("genome roundtrip lost motion genes");
 
 		const Genome old = Genome::fromLine(
 			"-0.03 -0.12 0.05 109 5.4 3.6 51 0.38 0.75 0.22");
-		if (old.morph_segments != 51 || old.limbs != 5) {
-			std::cerr << "headless verify failed: old pool line parse\n";
-			return 1;
-		}
+		if (old.morph_segments != 51 || old.limbs != 5)
+			return fail("old pool line parse");
+		if (old.dodge < 0.0f || old.reaction < 0.05f)
+			return fail("old pool line lost motion defaults");
 
 		const std::string dir = "/tmp/tunnelstrike-assess-verify";
 		{
@@ -76,14 +80,134 @@ namespace {
 		Genome other = Genome::random(rng);
 		other.limbs = 3;
 		const float wild = arch.assessmentBonus(other);
-		if (std::abs(exact - 3.75f) > 0.01f) {
-			std::cerr << "headless verify failed: assess exact+wildcard " << exact << "\n";
-			return 1;
+		if (std::abs(exact - 3.75f) > 0.01f)
+			return fail("assess exact+wildcard");
+		if (std::abs(wild - 2.25f) > 0.01f)
+			return fail("assess wildcard");
+
+		return 0;
+	}
+
+	int verify_ga()
+	{
+		using namespace TunnelStrike;
+
+		std::mt19937 rng(42);
+		Genome a = Genome::random(rng);
+		Genome hot = a.mutated(rng, 1.0f);
+		hot.clamp();
+		if (hot.speed < 20.0f || hot.speed > 200.0f)
+			return fail("mutated speed out of bounds");
+		if (hot.seek < -1.0f || hot.seek > 1.0f)
+			return fail("mutated seek out of bounds");
+		if (hot.dodge < 0.0f || hot.dodge > 1.5f)
+			return fail("mutated dodge out of bounds");
+		if (hot.reaction < 0.05f || hot.reaction > 1.0f)
+			return fail("mutated reaction out of bounds");
+
+		Genome mixed = Genome::crossover(a, hot, rng);
+		if (mixed.limbs < 3 || mixed.limbs > 8)
+			return fail("crossover limbs out of bounds");
+
+		Population p;
+		for (int i = 0; i < 16; ++i) {
+			Genome g = Genome::random(rng);
+			p.record(g, static_cast<float>(i + 1));
 		}
-		if (std::abs(wild - 2.25f) > 0.01f) {
-			std::cerr << "headless verify failed: assess wildcard " << wild << "\n";
-			return 1;
+		if (!p.maybeEvolve())
+			return fail("population did not evolve at batch size");
+		if (p.generationIndex() != 1)
+			return fail("generation did not increment");
+		if (p.pool().size() != Population::POOL_SIZE)
+			return fail("evolved pool size");
+		if (p.lastBestFitness() < 16.0f - 1e-4f)
+			return fail("elite best fitness dropped");
+		if (p.lastMeanFitness() <= 0.0f)
+			return fail("mean fitness not recorded");
+		if (p.lastDiversity() < 0.0f)
+			return fail("diversity not recorded");
+
+		const std::string dir = "/tmp/tunnelstrike-ga-verify";
+		{
+			Archive arch(dir);
+			arch.appendGeneration(
+				p.generationIndex(),
+				p.lastBestFitness(),
+				p.lastMeanFitness(),
+				p.lastDiversity(),
+				p.pool());
 		}
+
+		std::vector<Genome> loaded;
+		unsigned gen = 0;
+		const Archive loaded_arch(dir);
+		if (!loaded_arch.loadLatestPool(loaded, &gen))
+			return fail("could not reload evolved pool");
+		if (gen != 1)
+			return fail("generation was not persisted");
+		if (loaded.size() != Population::POOL_SIZE)
+			return fail("persisted pool size");
+
+		Population restored;
+		restored.seedFrom(loaded, gen);
+		if (restored.generationIndex() != 1)
+			return fail("seedFrom dropped generation");
+
+		for (int i = 0; i < 16; ++i)
+			restored.record(Genome::random(rng), 1.0f + static_cast<float>(i));
+		if (!restored.maybeEvolve() || restored.generationIndex() != 2)
+			return fail("second generation did not advance");
+
+		return 0;
+	}
+
+	int verify_motion_sense()
+	{
+		using namespace TunnelStrike;
+
+		Genome g;
+		g.vx = 0.0f;
+		g.vy = 0.0f;
+		g.jitter = 0.001f;
+		g.speed = 80.0f;
+		g.seek = 0.0f;
+		g.dodge = 1.2f;
+		g.reaction = 1.0f;
+		g.size = 3.0f;
+		g.limb_len = 1.0f;
+		g.limbs = 4;
+
+		const sf::Vector3f pos(0.f, 0.f, 100.f);
+		Target calm(pos, g);
+		Target hunted(pos, g);
+
+		Sense none;
+		none.player = Vector3d(0, 0, 0);
+
+		Sense threat;
+		threat.player = Vector3d(0, 0, 0);
+		threat.has_shot = true;
+		threat.nearest_shot = Vector3d(2.0, 0.0, 100.0);
+
+		const sf::Time dt = sf::seconds(0.03f);
+		for (int i = 0; i < 12; ++i) {
+			calm.Act(dt, none);
+			hunted.Act(dt, threat);
+		}
+
+		if (hunted.GetCenter().x >= calm.GetCenter().x - 0.05)
+			return fail("dodge gene did not move away from shot");
+
+		g.dodge = 0.0f;
+		g.seek = 1.0f;
+		Target seeker(pos, g);
+		Sense lure;
+		lure.player = Vector3d(4.0, 0.0, 100.0);
+		for (int i = 0; i < 12; ++i)
+			seeker.Act(dt, lure);
+
+		if (seeker.GetCenter().x <= 0.05)
+			return fail("seek gene did not move toward player");
 
 		return 0;
 	}
@@ -96,10 +220,14 @@ int main()
 
 	if (const int rc = verify_structure())
 		return rc;
+	if (const int rc = verify_ga())
+		return rc;
+	if (const int rc = verify_motion_sense())
+		return rc;
 
 	Camera3d::instance().translate(Vector3d(0, 0, 100.0f));
 
-	World world;
+	World world("/tmp/tunnelstrike-sim-evo");
 	SimClock clock;
 
 	const int ticks = 18000;
@@ -129,12 +257,12 @@ int main()
 		<< " generation=" << world.generation()
 		<< " pending=" << world.evo().scoredPending()
 		<< " best=" << world.evo().lastBestFitness()
+		<< " mean=" << world.evo().lastMeanFitness()
+		<< " diversity=" << world.evo().lastDiversity()
 		<< std::endl;
 
-	if (world.generation() == 0) {
-		std::cerr << "headless verify failed: generation stayed 0\n";
-		return 1;
-	}
+	if (world.generation() == 0)
+		return fail("generation stayed 0");
 
 	return 0;
 }

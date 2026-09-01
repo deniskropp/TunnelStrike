@@ -1,7 +1,10 @@
+#include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <random>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "utils/parameters.hpp"
@@ -221,7 +224,8 @@ namespace TunnelStrike
 			std::stringstream ss;
 
 			ss << "Kills: " << world.get_kills()
-			   << "  Gen: " << world.generation();
+			   << "  Gen: " << world.generation()
+			   << "  Best: " << world.evo().lastBestFitness();
 
 			stats.setString(ss.str());
 		}
@@ -229,10 +233,70 @@ namespace TunnelStrike
 		Stats stats;
 	};
 
+	int runEvoVerify(const std::string &dir, int ticks)
+	{
+		Camera3d::instance().translate(Vector3d(0, 0, 100.0f));
+
+		World world(dir);
+		SimClock clock;
+
+		const unsigned loaded_gen = world.generation();
+		const unsigned loaded_pool = static_cast<unsigned>(world.evo().pool().size());
+
+		for (int i = 0; i < ticks; ++i) {
+			Camera3d::instance().translate(Vector3d(0, 0, 0.04f));
+
+			if (i % 20 == 0) {
+				const Vector3d origin(0, 0, Camera3d::instance().center().get_z());
+				for (const Vector3d &center : world.liveTargetCenters()) {
+					Vector3d dir = center - origin;
+					if (dir.norm() < 1e-6)
+						continue;
+					dir.normalize();
+					dir *= 100.0;
+					world.fire(origin, dir);
+				}
+			}
+
+			world.Tick(clock.step());
+			clock.noteSteps(1);
+		}
+
+		world.store().snapshotWorld(world, world.evo(), clock.totalSteps());
+
+		std::cout << "game-evo-verify dir=" << dir
+			<< " loaded_gen=" << loaded_gen
+			<< " loaded_pool=" << loaded_pool
+			<< " ticks=" << clock.totalSteps()
+			<< " kills=" << world.get_kills()
+			<< " generation=" << world.generation()
+			<< " pending=" << world.evo().scoredPending()
+			<< " best=" << world.evo().lastBestFitness()
+			<< " mean=" << world.evo().lastMeanFitness()
+			<< " diversity=" << world.evo().lastDiversity()
+			<< std::endl;
+
+		if (loaded_pool == 0)
+			std::cerr << "game-evo-verify note: empty archive, started from random pool\n";
+
+		if (world.generation() == loaded_gen) {
+			std::cerr << "game evo verify failed: generation did not advance\n";
+			return 1;
+		}
+
+		return 0;
+	}
+
 }
 
-int main()
+int main(int argc, char **argv)
 {
+	if (argc >= 2 && std::string(argv[1]) == "--evo-verify") {
+		const std::string dir = argc >= 3 ? argv[2] : "evo";
+		const int ticks = argc >= 4 ? std::atoi(argv[3]) : 18000;
+		return TunnelStrike::runEvoVerify(dir, ticks);
+	}
+
 	sf::ContextSettings window_settings;
 
 	window_settings.antialiasingLevel = 8;

@@ -6,7 +6,7 @@ Project: TunnelStrike
 Mode: Hybrid
 Surface: protocol document
 Branch: main
-Meta-DNA: tunnelstrike-ocs-proto-v0.3
+Meta-DNA: tunnelstrike-ocs-proto-v0.4
 Coherence-target: 0.88
 ```
 
@@ -18,6 +18,8 @@ TunnelStrike als gebundenes OCS-Protokoll-Dokument führen und den C++/SFML-Kern
 2. Kreaturen mit GA-steuerbarer Motion + Körperstruktur.
 3. Evolutionszustand persistent speichern (`evo/`).
 4. Körper-Erscheinung/Limb-Topologie erblich und deterministisch; Fitness aus Survival oder menschlicher Bewertung (`evo/assess.txt`).
+5. Motion genes that sense player XY and nearest shot (`seek`, `dodge`, `reaction`).
+6. Stronger GA (tournament + elitism + immigrants) with persisted generation and diversity.
 
 Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 
@@ -43,11 +45,23 @@ Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 | P10 Fitness edge | done — `World::recordFitness` (survive / kill + bonus) |
 | P11 Structure verify | done — `TunnelStrike-sim` checks topology, roundtrip, assess, then 18000 ticks |
 
+## 2c. Executed slice (v0.4) — GA + simulator
+
+| TAS | Status |
+|---|---|
+| P12 Context motion genes | done — `seek`, `dodge`, `reaction` on `Genome` |
+| P13 Deterministic Act | done — per-target RNG, no `::rand` in `Target::Act` |
+| P14 Sense edge | done — `Targets::Tick` builds `Sense` from camera + live shots |
+| P15 Tournament GA | done — 3-way tournament, elites, 2 random immigrants, mean/diversity |
+| P16 Persist generation | done — `evo/pool.txt` header `# generation N ...` |
+| P17 Isolated sim | done — `World("/tmp/...")`, GA operator tests, dodge/seek tests |
+
 ## 3. Invariants
 
 - `World::Tick` is the only mutation edge for creatures, shots, evolution.
 - `World::recordFitness` is the only fitness recording edge.
 - Body topology is a pure function of the genome (same genome ⇒ same segment count).
+- Creature motion is a function of genome + `Sense` + per-genome RNG (same genome + same sense stream ⇒ same trajectory).
 - `RenderFrame` reads state only.
 - Autopilot aim-wander stays off (`#if 0` removed, not re-enabled).
 - `CheckShoot` auto-fire remains as existing self-running assist.

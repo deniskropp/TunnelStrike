@@ -1,6 +1,7 @@
 #include "Target.hpp"
 
 #include <cmath>
+#include <functional>
 
 
 namespace TunnelStrike {
@@ -10,7 +11,8 @@ Target::Target(sf::Vector3f spawn, const Genome &genome)
 	center(spawn.x, spawn.y, spawn.z),
 	size(genome.size),
 	color(genome.color()),
-	genome_(genome)
+	genome_(genome),
+	rng_(std::hash<std::string>{}(genome.toLine()))
 {
 	direction = Vector3d(genome_.vx, genome_.vy, 0.0);
 	generate();
@@ -59,16 +61,41 @@ void Target::generate()
 	}
 }
 
-void Target::Act(sf::Time delta)
+void Target::Act(sf::Time delta, const Sense &sense)
 {
 	const float dt = delta.asSeconds();
 	lived += dt;
 
-	const int period = std::max(1, static_cast<int>(1.0f / std::max(genome_.jitter, 0.001f)));
-	if ((::rand() % period) == 0) {
-		direction.x = genome_.vx + static_cast<float>(::rand() % 1001) / 1000.0f - 0.5f;
-		direction.y = genome_.vy + static_cast<float>(::rand() % 1001) / 1000.0f - 0.5f;
+	std::uniform_real_distribution<float> unit(0.0f, 1.0f);
+	if (unit(rng_) < genome_.jitter) {
+		direction.x = genome_.vx + unit(rng_) - 0.5f;
+		direction.y = genome_.vy + unit(rng_) - 0.5f;
 	}
+
+	Vector3d steer(direction.x, direction.y, 0.0);
+
+	Vector3d to_player(sense.player.x - center.x, sense.player.y - center.y, 0.0);
+	if (to_player.norm() > 1e-4) {
+		to_player.normalize();
+		steer.x += to_player.x * genome_.seek;
+		steer.y += to_player.y * genome_.seek;
+	}
+
+	if (sense.has_shot) {
+		Vector3d away(
+			center.x - sense.nearest_shot.x,
+			center.y - sense.nearest_shot.y,
+			0.0);
+		if (away.norm() > 1e-4) {
+			away.normalize();
+			steer.x += away.x * genome_.dodge;
+			steer.y += away.y * genome_.dodge;
+		}
+	}
+
+	const float alpha = genome_.reaction;
+	direction.x = direction.x * (1.0f - alpha) + steer.x * alpha;
+	direction.y = direction.y * (1.0f - alpha) + steer.y * alpha;
 
 	center += direction * dt * genome_.speed;
 

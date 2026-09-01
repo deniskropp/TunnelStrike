@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -43,13 +44,14 @@ namespace TunnelStrike {
 		std::vector<std::pair<Vector3d, Vector3d>> pending_shots;
 
 	public:
-		World();
+		explicit World(std::string evo_dir = "evo");
 
 		void Tick(sf::Time delta);
 
 		void fire(const Vector3d &pos, const Vector3d &dir);
 		void recordFitness(const Genome &genome, float base);
 		std::vector<Vector3d> liveTargetCenters() const;
+		std::vector<Vector3d> liveShotPositions() const;
 
 		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 

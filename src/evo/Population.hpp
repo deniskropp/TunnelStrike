@@ -25,18 +25,23 @@ namespace TunnelStrike {
 		unsigned scoredPending() const { return static_cast<unsigned>(scored.size()); }
 		const std::vector<Genome> &pool() const { return genomes; }
 		float lastBestFitness() const { return last_best; }
+		float lastMeanFitness() const { return last_mean; }
+		float lastDiversity() const { return last_diversity; }
 
-		void seedFrom(const std::vector<Genome> &loaded);
+		void seedFrom(const std::vector<Genome> &loaded, unsigned generation_index = 0);
 
 	private:
 		void refillRandom();
 		void evolveOnce();
+		const Genome &tournamentPick();
 
 		std::vector<Genome> genomes;
 		std::vector<std::pair<Genome, float>> scored;
 		unsigned generation = 0;
 		unsigned cursor = 0;
 		float last_best = 0.0f;
+		float last_mean = 0.0f;
+		float last_diversity = 0.0f;
 		std::mt19937 rng;
 	};
 

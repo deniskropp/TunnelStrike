@@ -1,10 +1,18 @@
 #pragma once
 
+#include <random>
+
 #include "evo/Genome.hpp"
 #include "geometry/segmented.hpp"
 
 namespace TunnelStrike {
 
+	struct Sense
+	{
+		Vector3d player;
+		Vector3d nearest_shot;
+		bool has_shot = false;
+	};
 
 	class Target : public Segmented
 	{
@@ -15,6 +23,7 @@ namespace TunnelStrike {
 		Vector3d direction;
 		Genome genome_;
 		float lived = 0.0f;
+		std::mt19937 rng_;
 
 		void generate();
 
@@ -25,7 +34,7 @@ namespace TunnelStrike {
 
 		const Genome &genome() const { return genome_; }
 
-		void Act(sf::Time delta);
+		void Act(sf::Time delta, const Sense &sense);
 
 		int bodySegmentCount() const { return static_cast<int>(segments.size()); }
 
