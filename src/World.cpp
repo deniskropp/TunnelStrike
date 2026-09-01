@@ -48,6 +48,18 @@ namespace TunnelStrike {
 		return out;
 	}
 
+	std::vector<World::LiveTarget> World::liveTargets() const
+	{
+		std::vector<LiveTarget> out;
+		if (!targets)
+			return out;
+
+		out.reserve(targets->targets.size());
+		for (const auto &t : targets->targets)
+			out.push_back({t->GetCenter(), t->GetVelocity(), t->genome().size});
+		return out;
+	}
+
 	std::vector<Vector3d> World::liveShotPositions() const
 	{
 		std::vector<Vector3d> out;
@@ -110,6 +122,11 @@ namespace TunnelStrike {
 		kills++;
 
 		Sfx::instance().PlayDie();
+	}
+
+	void World::missed()
+	{
+		misses++;
 	}
 
 

@@ -43,6 +43,7 @@ namespace TunnelStrike {
 
 			if (s->outsideWalls()) {
 				Sfx::instance().PlayHit();
+				world.missed();
 				continue;
 			}
 

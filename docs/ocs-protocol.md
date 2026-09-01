@@ -6,7 +6,7 @@ Project: TunnelStrike
 Mode: Hybrid
 Surface: protocol document
 Branch: main
-Meta-DNA: tunnelstrike-ocs-proto-v0.5
+Meta-DNA: tunnelstrike-ocs-proto-v0.6
 Coherence-target: 0.88
 ```
 
@@ -20,6 +20,7 @@ TunnelStrike als gebundenes OCS-Protokoll-Dokument führen und den C++/SFML-Kern
 4. Körper-Erscheinung/Limb-Topologie erblich und deterministisch; Fitness aus Survival oder menschlicher Bewertung (`evo/assess.txt`).
 5. Motion genes that sense player XY and nearest shot (`seek`, `dodge`, `reaction`, `strafe`, `range`, `lead`).
 6. Selection with truncation, crowding, elite clones + mutated elites, adaptive mutation, spawn bias.
+7. `--self-run` evolving player (pilot) intelligence, persisted beside creature `evo/`.
 
 Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 
@@ -64,6 +65,16 @@ Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 | P19 Fitness signal | done — near-miss + threat in survive/kill scores; hit radius from `size` |
 | P20 Selection | done — truncation k=4, crowding, 2 clones + 2 mutant elites, adaptive mut, elite spawn |
 
+## 2e. Executed slice (v0.6) — self-run pilot
+
+| TAS | Status |
+|---|---|
+| P21 CLI | done — `--self-run`, `--headless`, `--ticks`, `--evo-dir`, `--help` |
+| P22 Pilot genome | done — `src/evo/Pilot.hpp` (lead, smooth, trigger, target prefs) |
+| P23 PilotMind | done — aim/fire policy, 9s episodes, fitness from kills/accuracy/misses |
+| P24 Persist pilot | done — `evo/pilot.txt` + `evo/pilot.jsonl` |
+| P25 Pilot intercept | done — sticky target, muzzle-origin aim, vel intercept, ray fire gate |
+
 ## 3. Invariants
 
 - `World::Tick` is the only mutation edge for creatures, shots, evolution.
@@ -72,7 +83,8 @@ Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 - Creature motion is a function of genome + `Sense` + per-genome RNG (same genome + same sense stream ⇒ same trajectory).
 - `RenderFrame` reads state only.
 - Autopilot aim-wander stays off (`#if 0` removed, not re-enabled).
-- `CheckShoot` auto-fire remains as existing self-running assist.
+- `CheckShoot` auto-fire remains as existing assist when `--self-run` is off.
+- `--self-run` is the only evolving player-aim path; it does not use `CheckShoot`.
 
 ## 4. Three-Agent-Core
 

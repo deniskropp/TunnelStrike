@@ -36,6 +36,7 @@ namespace TunnelStrike {
 		std::unique_ptr<Walls> walls;
 
 		unsigned int kills;
+		unsigned int misses = 0;
 		unsigned long long ticks = 0;
 
 		Population population;
@@ -55,16 +56,26 @@ namespace TunnelStrike {
 			Vector3d dir;
 		};
 
+		struct LiveTarget
+		{
+			Vector3d pos;
+			Vector3d vel;
+			float size = 3.0f;
+		};
+
 		void recordFitness(const Genome &genome, float base);
 		std::vector<Vector3d> liveTargetCenters() const;
+		std::vector<LiveTarget> liveTargets() const;
 		std::vector<Vector3d> liveShotPositions() const;
 		std::vector<LiveShot> liveShots() const;
 
 		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 
 		void killed();
+		void missed();
 
 		unsigned int get_kills() const { return kills; }
+		unsigned int get_misses() const { return misses; }
 
 		Population &evo() { return population; }
 		const Population &evo() const { return population; }

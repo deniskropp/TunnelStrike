@@ -24,6 +24,7 @@ GAME_OBJECTS = \
 	objs/Targets.o				\
 	objs/Walls.o				\
 	objs/World.o				\
+	objs/evo/PilotMind.o		\
 	objs/evo/Population.o		\
 	objs/persist/Archive.o		\
 	objs/geometry/camera3d.o	\

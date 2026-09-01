@@ -166,4 +166,55 @@ namespace TunnelStrike {
 		return !out.empty();
 	}
 
+	void Archive::appendPilot(unsigned generation, float best_fitness, float mean_fitness,
+		float diversity, const std::vector<Pilot> &pool)
+	{
+		ensureDir();
+		std::ofstream journal(pilotJournalPath(), std::ios::app);
+		journal << "{\"generation\":" << generation
+			<< ",\"best\":" << best_fitness
+			<< ",\"mean\":" << mean_fitness
+			<< ",\"diversity\":" << diversity
+			<< ",\"pool\":" << pool.size() << "}\n";
+
+		std::ofstream pool_file(pilotPoolPath(), std::ios::trunc);
+		pool_file << "# generation " << generation
+			<< " best " << best_fitness
+			<< " mean " << mean_fitness
+			<< " diversity " << diversity << '\n';
+		for (const auto &p : pool)
+			pool_file << p.toLine() << '\n';
+	}
+
+	bool Archive::loadLatestPilot(std::vector<Pilot> &out, unsigned *generation) const
+	{
+		std::ifstream file(pilotPoolPath());
+		if (!file)
+			return false;
+
+		out.clear();
+		std::string line;
+		while (std::getline(file, line)) {
+			if (line.empty())
+				continue;
+			if (line[0] == '#') {
+				if (generation) {
+					std::istringstream hs(line.substr(1));
+					std::string key;
+					while (hs >> key) {
+						if (key == "generation") {
+							unsigned g = 0;
+							if (hs >> g)
+								*generation = g;
+							break;
+						}
+					}
+				}
+				continue;
+			}
+			out.push_back(Pilot::fromLine(line));
+		}
+		return !out.empty();
+	}
+
 }

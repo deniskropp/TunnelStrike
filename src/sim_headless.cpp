@@ -5,6 +5,7 @@
 #include <random>
 #include <string>
 
+#include "evo/Pilot.hpp"
 #include "evo/Population.hpp"
 #include "geometry/camera3d.hpp"
 #include "persist/Archive.hpp"
@@ -278,6 +279,66 @@ namespace {
 		return 0;
 	}
 
+	int verify_pilot()
+	{
+		using namespace TunnelStrike;
+
+		std::mt19937 rng(7);
+		Pilot a = Pilot::random(rng);
+		a.lead = 1.25f;
+		a.trigger = 0.8f;
+		a.stick = 0.82f;
+		a.max_dist = 520.0f;
+		const Pilot round = Pilot::fromLine(a.toLine());
+		if (std::abs(round.lead - a.lead) > 1e-4f || std::abs(round.trigger - a.trigger) > 1e-4f)
+			return fail("pilot genome roundtrip");
+		if (std::abs(round.stick - a.stick) > 1e-4f || std::abs(round.max_dist - a.max_dist) > 1e-2f)
+			return fail("pilot genome roundtrip lost stick/range");
+
+		const Pilot oldp = Pilot::fromLine("1.0 0.5 0.01 0.26 560 0.65 0.2 0.08 0.5 0 0");
+		if (oldp.stick < 0.2f || oldp.max_dist < 120.0f)
+			return fail("old pilot line lost stick default");
+
+		Pilot hot = a.mutated(rng, 1.0f);
+		if (hot.fire_gap < 0.15f || hot.fire_gap > 0.7f)
+			return fail("mutated fire_gap out of bounds");
+		if (hot.max_dist < 120.0f || hot.max_dist > 780.0f)
+			return fail("mutated max_dist out of bounds");
+		if (hot.stick < 0.2f || hot.stick > 0.95f)
+			return fail("mutated stick out of bounds");
+
+		PilotPop p;
+		Pilot champ = Pilot::random(rng);
+		champ.lead = 1.7f;
+		p.record(champ, 50.0f);
+		for (int i = 0; i < 7; ++i)
+			p.record(Pilot::random(rng), static_cast<float>(i + 1));
+		if (!p.maybeEvolve())
+			return fail("pilot population did not evolve");
+		if (p.generationIndex() != 1)
+			return fail("pilot generation did not increment");
+		if (std::abs(p.pool().front().lead - champ.lead) > 1e-3f)
+			return fail("pilot elite was not cloned");
+
+		const std::string dir = "/tmp/tunnelstrike-pilot-verify";
+		{
+			Archive arch(dir);
+			arch.appendPilot(
+				p.generationIndex(),
+				p.lastBestFitness(),
+				p.lastMeanFitness(),
+				p.lastDiversity(),
+				p.pool());
+		}
+		std::vector<Pilot> loaded;
+		unsigned gen = 0;
+		const Archive loaded_arch(dir);
+		if (!loaded_arch.loadLatestPilot(loaded, &gen) || gen != 1 || loaded.size() != PilotPop::POOL_SIZE)
+			return fail("pilot pool persist");
+
+		return 0;
+	}
+
 }
 
 int main()
@@ -289,6 +350,8 @@ int main()
 	if (const int rc = verify_ga())
 		return rc;
 	if (const int rc = verify_motion_sense())
+		return rc;
+	if (const int rc = verify_pilot())
 		return rc;
 
 	Camera3d::instance().translate(Vector3d(0, 0, 100.0f));

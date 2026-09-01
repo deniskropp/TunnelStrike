@@ -37,6 +37,8 @@ namespace TunnelStrike {
 
 		Vector3d GetCenter() const { return center; }
 
+		Vector3d GetVelocity() const { return direction * genome_.speed; }
+
 		const Genome &genome() const { return genome_; }
 
 		void Act(sf::Time delta, const Sense &sense);
