@@ -6,7 +6,7 @@ Project: TunnelStrike
 Mode: Hybrid
 Surface: protocol document
 Branch: main
-Meta-DNA: tunnelstrike-ocs-proto-v0.4
+Meta-DNA: tunnelstrike-ocs-proto-v0.5
 Coherence-target: 0.88
 ```
 
@@ -18,8 +18,8 @@ TunnelStrike als gebundenes OCS-Protokoll-Dokument führen und den C++/SFML-Kern
 2. Kreaturen mit GA-steuerbarer Motion + Körperstruktur.
 3. Evolutionszustand persistent speichern (`evo/`).
 4. Körper-Erscheinung/Limb-Topologie erblich und deterministisch; Fitness aus Survival oder menschlicher Bewertung (`evo/assess.txt`).
-5. Motion genes that sense player XY and nearest shot (`seek`, `dodge`, `reaction`).
-6. Stronger GA (tournament + elitism + immigrants) with persisted generation and diversity.
+5. Motion genes that sense player XY and nearest shot (`seek`, `dodge`, `reaction`, `strafe`, `range`, `lead`).
+6. Selection with truncation, crowding, elite clones + mutated elites, adaptive mutation, spawn bias.
 
 Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 
@@ -55,6 +55,14 @@ Nicht in diesem Frame: Merge mit `t162` oder `TunnelStrike-svelte`.
 | P15 Tournament GA | done — 3-way tournament, elites, 2 random immigrants, mean/diversity |
 | P16 Persist generation | done — `evo/pool.txt` header `# generation N ...` |
 | P17 Isolated sim | done — `World("/tmp/...")`, GA operator tests, dodge/seek tests |
+
+## 2d. Executed slice (v0.5) — behaviour, fitness, selection
+
+| TAS | Status |
+|---|---|
+| P18 Predictive steer | done — `strafe` / `range` / `lead`, closing-shot Sense, wall bounce |
+| P19 Fitness signal | done — near-miss + threat in survive/kill scores; hit radius from `size` |
+| P20 Selection | done — truncation k=4, crowding, 2 clones + 2 mutant elites, adaptive mut, elite spawn |
 
 ## 3. Invariants
 

@@ -19,7 +19,7 @@ namespace TunnelStrike {
 		std::list<std::shared_ptr<Target>> targets_new;
 
 		const Vector3d player = Camera3d::instance().center();
-		const std::vector<Vector3d> shots = world.liveShotPositions();
+		const std::vector<World::LiveShot> shots = world.liveShots();
 
 		for (auto t : targets) {
 			if (t->GetCenter().get_z() <= player.get_z()) {
@@ -29,13 +29,15 @@ namespace TunnelStrike {
 
 			Sense sense;
 			sense.player = player;
-			float nearest = 1e30f;
 			for (const auto &shot : shots) {
-				const float d = static_cast<float>(t->GetCenter().distance_to(shot));
-				if (d < nearest) {
-					nearest = d;
-					sense.nearest_shot = shot;
+				const float d = static_cast<float>(t->GetCenter().distance_to(shot.pos));
+				if (d < sense.nearest_shot_dist) {
+					sense.nearest_shot_dist = d;
+					sense.nearest_shot = shot.pos;
+					sense.nearest_shot_dir = shot.dir;
 					sense.has_shot = true;
+					const Vector3d to_target = t->GetCenter() - shot.pos;
+					sense.shot_closing = (to_target * shot.dir) > 0.0;
 				}
 			}
 

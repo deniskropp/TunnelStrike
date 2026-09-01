@@ -15,13 +15,14 @@
     Self-running mode
     Fixed simulation clock (30 ms tick, display decoupled)
     GA-controlled creature motion and body structure
-    Motion genes for player seek / shot dodge / reaction blend
+    Motion genes for player seek / shot dodge / strafe / range / lead
+    Survival fitness from time, near-misses, and threat; size-scaled hit radius
     Persistent evolution archive under `evo/` (generation, mean, diversity)
 
 ## Planned Features
 
 ### Evolving creatures
-    GA based logic controlling motion depending on position relative to player, bullets (`seek`, `dodge`, `reaction`)
+    GA based logic controlling motion depending on position relative to player, bullets (`seek`, `dodge`, `reaction`, `strafe`, `range`, `lead`)
     Appearance / limb structure evolving from survival fitness (heritable `limbs`, `limb_len`, `fork`, `twist`)
     Optional human assessment overlay: `evo/assess.txt` (`* <bonus>` or `<bonus> <genome line>`)
 

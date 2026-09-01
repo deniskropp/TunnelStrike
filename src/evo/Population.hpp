@@ -33,12 +33,14 @@ namespace TunnelStrike {
 	private:
 		void refillRandom();
 		void evolveOnce();
-		const Genome &tournamentPick();
+		const Genome &tournamentPick(unsigned among);
 
 		std::vector<Genome> genomes;
 		std::vector<std::pair<Genome, float>> scored;
+		std::vector<float> pick_fit;
 		unsigned generation = 0;
 		unsigned cursor = 0;
+		unsigned spawn_elites = 4;
 		float last_best = 0.0f;
 		float last_mean = 0.0f;
 		float last_diversity = 0.0f;

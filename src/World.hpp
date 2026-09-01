@@ -49,9 +49,16 @@ namespace TunnelStrike {
 		void Tick(sf::Time delta);
 
 		void fire(const Vector3d &pos, const Vector3d &dir);
+		struct LiveShot
+		{
+			Vector3d pos;
+			Vector3d dir;
+		};
+
 		void recordFitness(const Genome &genome, float base);
 		std::vector<Vector3d> liveTargetCenters() const;
 		std::vector<Vector3d> liveShotPositions() const;
+		std::vector<LiveShot> liveShots() const;
 
 		virtual void draw(sf::RenderTarget& target, DrawStates states) const;
 

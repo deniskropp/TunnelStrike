@@ -11,7 +11,10 @@ namespace TunnelStrike {
 	{
 		Vector3d player;
 		Vector3d nearest_shot;
+		Vector3d nearest_shot_dir;
+		float nearest_shot_dist = 1e30f;
 		bool has_shot = false;
+		bool shot_closing = false;
 	};
 
 	class Target : public Segmented
@@ -23,6 +26,8 @@ namespace TunnelStrike {
 		Vector3d direction;
 		Genome genome_;
 		float lived = 0.0f;
+		float near_miss = 0.0f;
+		float threat = 0.0f;
 		std::mt19937 rng_;
 
 		void generate();
@@ -40,9 +45,15 @@ namespace TunnelStrike {
 
 		float livedSeconds() const { return lived; }
 
-		float fitnessIfKilled() const { return lived * 0.35f; }
+		float fitnessIfKilled() const
+		{
+			return lived * 0.4f + near_miss * 2.2f + threat * 0.35f;
+		}
 
-		float fitnessIfSurvived() const { return lived * 1.15f + 8.0f; }
+		float fitnessIfSurvived() const
+		{
+			return lived * 1.2f + 10.0f + near_miss * 3.5f + threat * 1.1f;
+		}
 	};
 
 

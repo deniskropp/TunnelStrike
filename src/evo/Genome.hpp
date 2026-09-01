@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <random>
 #include <sstream>
@@ -29,6 +30,9 @@ namespace TunnelStrike {
 		float seek = 0.0f;
 		float dodge = 0.35f;
 		float reaction = 0.35f;
+		float strafe = 0.4f;
+		float range = 4.0f;
+		float lead = 0.5f;
 
 		void clamp()
 		{
@@ -49,6 +53,22 @@ namespace TunnelStrike {
 			seek = std::clamp(seek, -1.0f, 1.0f);
 			dodge = std::clamp(dodge, 0.0f, 1.5f);
 			reaction = std::clamp(reaction, 0.05f, 1.0f);
+			strafe = std::clamp(strafe, 0.0f, 1.5f);
+			range = std::clamp(range, 1.0f, 9.0f);
+			lead = std::clamp(lead, 0.0f, 1.5f);
+		}
+
+		float geneDistance(const Genome &o) const
+		{
+			auto d = [](float a, float b) { return std::abs(a - b); };
+			return d(speed, o.speed) * 0.01f
+				+ d(seek, o.seek)
+				+ d(dodge, o.dodge)
+				+ d(strafe, o.strafe)
+				+ d(lead, o.lead)
+				+ d(range, o.range) * 0.12f
+				+ d(size, o.size) * 0.15f
+				+ d(static_cast<float>(limbs), static_cast<float>(o.limbs)) * 0.08f;
 		}
 
 		int limbCount() const { return std::max(3, std::min(8, limbs)); }
@@ -87,6 +107,9 @@ namespace TunnelStrike {
 			g.seek = signed_v(rng) * 2.0f;
 			g.dodge = unit(rng) * 1.2f;
 			g.reaction = 0.1f + unit(rng) * 0.8f;
+			g.strafe = unit(rng) * 1.2f;
+			g.range = 1.5f + unit(rng) * 6.5f;
+			g.lead = unit(rng) * 1.2f;
 			g.clamp();
 			return g;
 		}
@@ -128,6 +151,9 @@ namespace TunnelStrike {
 			nudge(g.seek, 0.18f, -1.0f, 1.0f);
 			nudge(g.dodge, 0.15f, 0.0f, 1.5f);
 			nudge(g.reaction, 0.12f, 0.05f, 1.0f);
+			nudge(g.strafe, 0.15f, 0.0f, 1.5f);
+			nudge(g.range, 0.55f, 1.0f, 9.0f);
+			nudge(g.lead, 0.15f, 0.0f, 1.5f);
 			g.clamp();
 			return g;
 		}
@@ -153,6 +179,9 @@ namespace TunnelStrike {
 			g.seek = (a.seek + b.seek) * 0.5f;
 			g.dodge = unit(rng) < 0.5f ? a.dodge : b.dodge;
 			g.reaction = (a.reaction + b.reaction) * 0.5f;
+			g.strafe = unit(rng) < 0.5f ? a.strafe : b.strafe;
+			g.range = (a.range + b.range) * 0.5f;
+			g.lead = (a.lead + b.lead) * 0.5f;
 			g.clamp();
 			return g;
 		}
@@ -172,7 +201,8 @@ namespace TunnelStrike {
 			   << size << ' ' << morph_spread << ' ' << morph_segments << ' '
 			   << cr << ' ' << cg << ' ' << cb << ' '
 			   << limbs << ' ' << limb_len << ' ' << fork << ' ' << twist << ' '
-			   << seek << ' ' << dodge << ' ' << reaction;
+			   << seek << ' ' << dodge << ' ' << reaction << ' '
+			   << strafe << ' ' << range << ' ' << lead;
 			return os.str();
 		}
 
@@ -202,6 +232,15 @@ namespace TunnelStrike {
 				g.seek = parsed_seek;
 				g.dodge = parsed_dodge;
 				g.reaction = parsed_reaction;
+			}
+
+			float parsed_strafe = 0.0f;
+			float parsed_range = 0.0f;
+			float parsed_lead = 0.0f;
+			if (is >> parsed_strafe >> parsed_range >> parsed_lead) {
+				g.strafe = parsed_strafe;
+				g.range = parsed_range;
+				g.lead = parsed_lead;
 			}
 			g.clamp();
 			return g;

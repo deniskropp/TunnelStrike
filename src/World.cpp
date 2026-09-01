@@ -60,6 +60,18 @@ namespace TunnelStrike {
 		return out;
 	}
 
+	std::vector<World::LiveShot> World::liveShots() const
+	{
+		std::vector<LiveShot> out;
+		if (!shots)
+			return out;
+
+		out.reserve(shots->shots.size());
+		for (const auto &s : shots->shots)
+			out.push_back({s->GetCenter(), s->GetDir()});
+		return out;
+	}
+
 	void World::Tick(sf::Time delta)
 	{
 		++ticks;

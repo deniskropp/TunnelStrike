@@ -32,6 +32,8 @@ namespace TunnelStrike {
 
 		Vector3d GetCenter() const { return position(); }
 
+		Vector3d GetDir() const { return dir; }
+
 		friend std::ostream& operator << (std::ostream& os, const Shot& shot)
 		{
 			os << shot.position();

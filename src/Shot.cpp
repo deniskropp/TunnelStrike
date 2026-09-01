@@ -64,7 +64,8 @@ namespace TunnelStrike {
 		Vector3d current = position();
 
 		for (auto t : targets) {
-			if (distance_point_segment(t->GetCenter(), last, current) < 3.0)
+			const double radius = 1.35 + static_cast<double>(t->genome().size) * 0.42;
+			if (distance_point_segment(t->GetCenter(), last, current) < radius)
 				return t;
 		}
 
