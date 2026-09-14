@@ -109,6 +109,56 @@ namespace TunnelStrike {
 		current = pop.nextPolicy();
 	}
 
+	std::vector<float> PilotMind::buildNeuralState(const World &world, const Vector3d &muzzle, bool has_target,
+		const Vector3d &target_pos, const Vector3d &target_vel, float target_size) {
+		std::vector<float> state(10, 0.0f); // 10 input features
+		
+		if (has_target) {
+			const Vector3d rel = target_pos - muzzle;
+			const float dist = static_cast<float>(rel.norm());
+			const float rel_z = static_cast<float>(rel.z);
+			
+			// Normalize and scale input features
+			state[0] = std::clamp(dist / 800.0f, 0.0f, 1.0f); // target_distance (normalized to [0,1])
+			state[1] = std::clamp(static_cast<float>(std::atan2(rel.x, rel.z)) / (PI/2), -1.0f, 1.0f); // target_angle_x
+			state[2] = std::clamp(static_cast<float>(std::atan2(rel.y, std::max(dist, 0.1f))) / (PI/2), -1.0f, 1.0f); // target_angle_y
+			state[3] = std::clamp((float) target_vel.x / 200.0f, -1.0f, 1.0f); // target_velocity_x
+			state[4] = std::clamp((float) target_vel.y / 200.0f, -1.0f, 1.0f); // target_velocity_y
+			state[5] = std::clamp(target_size / 7.0f, 0.0f, 1.0f); // target_size
+			state[6] = 0.0f; // player_velocity_x (not used for now)
+			state[7] = 0.0f; // player_velocity_y (not used for now)
+			state[8] = 1.0f; // has_target flag
+			state[9] = std::clamp(cooldown / 1.0f, 0.0f, 1.0f); // cooldown_remaining
+		} else {
+			// No target - use default/zero values
+			state[0] = 0.0f; // target_distance
+			state[1] = 0.0f; // target_angle_x
+			state[2] = 0.0f; // target_angle_y
+			state[3] = 0.0f; // target_velocity_x
+			state[4] = 0.0f; // target_velocity_y
+			state[5] = 0.0f; // target_size
+			state[6] = 0.0f; // player_velocity_x
+			state[7] = 0.0f; // player_velocity_y
+			state[8] = 0.0f; // has_target flag
+			state[9] = std::clamp(cooldown / 1.0f, 0.0f, 1.0f); // cooldown_remaining
+		}
+		
+		return state;
+	}
+
+	void PilotMind::trainNeuralNetworks(float reward) {
+		if (!USE_NEURAL_NETWORK || last_neural_state.empty()) return;
+		
+		// Train the neural network with the reward
+		pilot_network.trainFromExperience(last_neural_state, last_neural_decision, reward);
+		
+		// Periodically train from accumulated experiences
+		static int train_counter = 0;
+		if (++train_counter % 10 == 0) {
+			pilot_network.trainFromExperiences();
+		}
+	}
+
 	bool PilotMind::pickTarget(World &world, const Vector3d &muzzle, Vector3d &pos, Vector3d &vel, float &size)
 	{
 		const auto sights = world.liveTargets();
@@ -226,11 +276,21 @@ namespace TunnelStrike {
 			const unsigned new_kills = world.get_kills() - seen_kills;
 			episode_kills += static_cast<int>(new_kills);
 			seen_kills = world.get_kills();
+			
+			// Positive reward for neural network when killing
+			if (USE_NEURAL_NETWORK && use_neural_this_step) {
+				trainNeuralNetworks(1.0f); // High reward for kill
+			}
 			have_lock = false;
 		}
 		if (world.get_misses() > seen_misses) {
 			episode_misses += static_cast<int>(world.get_misses() - seen_misses);
 			seen_misses = world.get_misses();
+			
+			// Negative reward for neural network when missing
+			if (USE_NEURAL_NETWORK && use_neural_this_step) {
+				trainNeuralNetworks(-0.5f); // Negative reward for miss
+			}
 		}
 
 		if (episode_age >= EPISODE_SECONDS)
@@ -244,24 +304,61 @@ namespace TunnelStrike {
 		if (have)
 			++episode_had_target;
 
+		// Build neural network state
+		last_neural_state = buildNeuralState(world, muzzle, have, target, vel, size);
+		
+		// Use neural network for decision making (hybrid approach)
+		use_neural_this_step = false;
 		float want_x = 0.0f;
 		float want_y = 0.0f;
 		Vector3d aim_at = target;
 		bool intercept_ok = false;
 
 		if (have) {
-			aim_at = interceptPoint(muzzle, target, vel, current.lead);
-			intercept_ok = inTunnelXY(aim_at, TUNNEL_BOUND + 0.5);
+			// Get neural network decision
+			if (USE_NEURAL_NETWORK) {
+				last_neural_decision = pilot_network.makeDecision(last_neural_state);
+				use_neural_this_step = true;
+				
+				// Use neural network's lead factor if it suggests a better lead
+				float neural_lead = last_neural_decision.lead_factor * 1.5f + 0.5f; // Map [0,1] to [0.5, 2.0]
+				aim_at = interceptPoint(muzzle, target, vel, neural_lead);
+				intercept_ok = inTunnelXY(aim_at, TUNNEL_BOUND + 0.5);
 
-			const Vector3d rel = aim_at - muzzle;
-			const float horiz = static_cast<float>(std::hypot(rel.x, rel.z));
-			want_x = rad2deg(static_cast<float>(std::atan2(rel.x, rel.z))) * 4.0f;
-			want_y = rad2deg(static_cast<float>(std::atan2(rel.y, std::max(horiz, 0.1f)))) * 4.0f;
+				// Use neural network's aim adjustments
+				const Vector3d rel = aim_at - muzzle;
+				const float horiz = static_cast<float>(std::hypot(rel.x, rel.z));
+				want_x = rad2deg(static_cast<float>(std::atan2(rel.x, rel.z))) * 4.0f + last_neural_decision.aim_x_delta * 20.0f;
+				want_y = rad2deg(static_cast<float>(std::atan2(rel.y, std::max(horiz, 0.1f)))) * 4.0f + last_neural_decision.aim_y_delta * 20.0f;
+			} else {
+				// Original logic
+				aim_at = interceptPoint(muzzle, target, vel, current.lead);
+				intercept_ok = inTunnelXY(aim_at, TUNNEL_BOUND + 0.5);
+
+				const Vector3d rel = aim_at - muzzle;
+				const float horiz = static_cast<float>(std::hypot(rel.x, rel.z));
+				want_x = rad2deg(static_cast<float>(std::atan2(rel.x, rel.z))) * 4.0f;
+				want_y = rad2deg(static_cast<float>(std::atan2(rel.y, std::max(horiz, 0.1f)))) * 4.0f;
+			}
 		} else {
-			want_x = current.yaw_bias * 8.0f
-				+ std::sin(clock * (0.8f + current.wander * 1.5f)) * current.wander * 28.0f;
-			want_y = current.pitch_bias * 8.0f
-				+ std::cos(clock * (0.5f + current.wander * 1.2f)) * current.wander * 18.0f;
+			// No target - use neural network for exploration
+			if (USE_NEURAL_NETWORK) {
+				last_neural_decision = pilot_network.makeDecision(last_neural_state);
+				use_neural_this_step = true;
+				
+				want_x = current.yaw_bias * 8.0f
+					+ std::sin(clock * (0.8f + current.wander * 1.5f)) * current.wander * 28.0f
+					+ last_neural_decision.aim_x_delta * 10.0f;
+				want_y = current.pitch_bias * 8.0f
+					+ std::cos(clock * (0.5f + current.wander * 1.2f)) * current.wander * 18.0f
+					+ last_neural_decision.aim_y_delta * 10.0f;
+			} else {
+				// Original exploration behavior
+				want_x = current.yaw_bias * 8.0f
+					+ std::sin(clock * (0.8f + current.wander * 1.5f)) * current.wander * 28.0f;
+				want_y = current.pitch_bias * 8.0f
+					+ std::cos(clock * (0.5f + current.wander * 1.2f)) * current.wander * 18.0f;
+			}
 		}
 
 		std::uniform_real_distribution<float> unit(0.0f, 1.0f);
@@ -290,7 +387,16 @@ namespace TunnelStrike {
 		const double dist_body = pointRayDist(muzzle, barrel, target);
 		const bool on_lead = dist_lead < slack;
 		const bool on_body = dist_body < slack * 1.25;
-		if (!on_lead && !on_body)
+		
+		// Use neural network decision for firing if available
+		bool should_fire = false;
+		if (USE_NEURAL_NETWORK && use_neural_this_step) {
+			should_fire = last_neural_decision.should_fire && (on_lead || on_body);
+		} else {
+			should_fire = !on_lead && !on_body ? false : true;
+		}
+		
+		if (!should_fire)
 			return false;
 
 		fire_dir = barrel;

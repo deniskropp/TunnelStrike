@@ -3,6 +3,7 @@
 #include <random>
 
 #include "evo/Genome.hpp"
+#include "evo/NeuralNetwork.hpp"
 #include "geometry/segmented.hpp"
 
 namespace TunnelStrike {
@@ -29,8 +30,17 @@ namespace TunnelStrike {
 		float near_miss = 0.0f;
 		float threat = 0.0f;
 		std::mt19937 rng_;
+		TargetNetwork target_network;
 
 		void generate();
+
+		// Neural network state tracking
+		std::vector<float> last_neural_state;
+		TargetNetwork::Movement last_neural_movement;
+		bool use_neural_this_step = false;
+
+		// Build state for neural network
+		std::vector<float> buildNeuralState(const Sense &sense);
 
 	public:
 		Target(sf::Vector3f center, const Genome &genome);
@@ -40,6 +50,8 @@ namespace TunnelStrike {
 		Vector3d GetVelocity() const { return direction * genome_.speed; }
 
 		const Genome &genome() const { return genome_; }
+		TargetNetwork& neuralTarget() { return target_network; }
+		const TargetNetwork& neuralTarget() const { return target_network; }
 
 		void Act(sf::Time delta, const Sense &sense);
 

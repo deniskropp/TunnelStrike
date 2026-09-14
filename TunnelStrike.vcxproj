@@ -74,6 +74,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\evo\Genome.hpp" />
+    <ClInclude Include="src\evo\NeuralNetwork.hpp" />
     <ClInclude Include="src\evo\Pilot.hpp" />
     <ClInclude Include="src\evo\PilotMind.hpp" />
     <ClInclude Include="src\evo\Population.hpp" />
@@ -102,6 +103,7 @@
     <ClCompile Include="src\utils\tools.cpp" />
     <ClCompile Include="src\Walls.cpp" />
     <ClCompile Include="src\World.cpp" />
+    <ClCompile Include="src\evo\NeuralNetwork.cpp" />
     <ClCompile Include="src\evo\PilotMind.cpp" />
     <ClCompile Include="src\evo\Population.cpp" />
     <ClCompile Include="src\persist\Archive.cpp" />

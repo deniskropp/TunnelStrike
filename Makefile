@@ -24,6 +24,7 @@ GAME_OBJECTS = \
 	objs/Targets.o				\
 	objs/Walls.o				\
 	objs/World.o				\
+	objs/evo/NeuralNetwork.o	\
 	objs/evo/PilotMind.o		\
 	objs/evo/Population.o		\
 	objs/persist/Archive.o		\
